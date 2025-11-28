@@ -871,12 +871,25 @@
                         單人模式：細分食材成分，精準計算個人熱量
                     </p>
 
-                    <label for="imageInput" class="file-upload-label">
-                        📁 選擇圖片檔案
-                    </label>
-                    <input type="file" id="imageInput" accept="image/*">
-                    <span id="fileName" style="margin-left: 15px; color: #667eea;"></span>
-                    <br><br>
+                    <!-- 圖片來源選擇 -->
+                    <div class="upload-options" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                        <label for="cameraInput" class="file-upload-label" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            📷 拍照
+                        </label>
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+
+                        <label for="imageInput" class="file-upload-label">
+                            📁 選擇圖片
+                        </label>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+
+                    <!-- 預覽圖片 -->
+                    <div id="previewContainer" style="display: none; text-align: center; margin-bottom: 20px;">
+                        <img id="previewImage" style="max-width: 100%; max-height: 300px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <p id="fileName" style="margin-top: 10px; color: #667eea;"></p>
+                    </div>
+
                     <button class="btn btn-primary" onclick="uploadImage()">🔍 開始辨識</button>
                 </div>
 
@@ -1426,13 +1439,41 @@
             document.getElementById('saveSection').style.display = 'none';
             document.getElementById('saveStatus').innerHTML = '';
             document.getElementById('imageInput').value = '';
+            document.getElementById('cameraInput').value = '';
             document.getElementById('fileName').textContent = '';
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('previewImage').src = '';
         };
 
-        // 檔案名稱顯示
+        // 圖片預覽功能
+        function showPreview(file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('previewContainer').style.display = 'block';
+                    document.getElementById('fileName').textContent = `已選擇: ${file.name}`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 相機拍照
+        document.getElementById('cameraInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // 複製到 imageInput 以便上傳
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('imageInput').files = dataTransfer.files;
+                showPreview(file);
+            }
+        });
+
+        // 選擇圖片檔案
         document.getElementById('imageInput').addEventListener('change', (e) => {
-            const fileName = e.target.files[0]?.name || '';
-            document.getElementById('fileName').textContent = fileName ? `已選擇: ${fileName}` : '';
+            const file = e.target.files[0];
+            showPreview(file);
         });
 
         document.getElementById('pdfInput').addEventListener('change', (e) => {
