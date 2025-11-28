@@ -1,23 +1,19 @@
 {
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/login", "dest": "/public/login.html" },
-    { "src": "/register", "dest": "/public/register.html" },
-    { "src": "/dashboard", "dest": "/public/dashboard.html" },
-    { "src": "/chat", "dest": "/public/chat.html" },
-    { "src": "/settings", "dest": "/public/settings.html" },
-    { "src": "/statistics", "dest": "/public/statistics.html" },
-    { "src": "/exercise", "dest": "/public/exercise.html" },
-    { "src": "/diet-records", "dest": "/public/diet_records.html" },
-    { "src": "/food-detect", "dest": "/public/food-detect.html" },
-    { "src": "/profile-setup", "dest": "/public/profile_setup.html" },
-    { "src": "/profile-edit", "dest": "/public/profile_edit.html" },
-    { "src": "/verify-email", "dest": "/public/verify-email.html" },
-    { "src": "/install", "dest": "/public/install.html" },
-    { "src": "/welcome", "dest": "/public/welcome.html" }
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/public/login.html" },
+    { "source": "/register", "destination": "/public/register.html" },
+    { "source": "/dashboard", "destination": "/public/dashboard.html" },
+    { "source": "/chat", "destination": "/public/chat.html" },
+    { "source": "/settings", "destination": "/public/settings.html" },
+    { "source": "/statistics", "destination": "/public/statistics.html" },
+    { "source": "/exercise", "destination": "/public/exercise.html" },
+    { "source": "/diet-records", "destination": "/public/diet_records.html" },
+    { "source": "/food-detect", "destination": "/public/food-detect.html" },
+    { "source": "/profile-setup", "destination": "/public/profile_setup.html" },
+    { "source": "/profile-edit", "destination": "/public/profile_edit.html" },
+    { "source": "/verify-email", "destination": "/public/verify-email.html" },
+    { "source": "/install", "destination": "/public/install.html" },
+    { "source": "/welcome", "destination": "/public/welcome.html" }
   ]
 }
