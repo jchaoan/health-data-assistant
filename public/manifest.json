@@ -2,7 +2,7 @@
   "name": "健康數據助理",
   "short_name": "健康助理",
   "description": "AI 智能營養追蹤與健康數據管理系統",
-  "start_url": "/public/dashboard.html",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
