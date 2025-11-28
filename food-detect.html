@@ -1212,6 +1212,10 @@
                     lastAnalysisResult = data;
                     lastImageBase64 = data.image_data || null;
 
+                    // Debug: 檢查圖片資料
+                    console.log('[辨識] API 回傳 image_data 長度:', data.image_data ? data.image_data.length : 0);
+                    console.log('[辨識] lastImageBase64 長度:', lastImageBase64 ? lastImageBase64.length : 0);
+
                     // 顯示儲存按鈕（只有已登入用戶才顯示）
                     if (currentUser) {
                         document.getElementById('saveSection').style.display = 'block';
