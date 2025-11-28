@@ -12,11 +12,15 @@ AI 智慧營養追蹤與健康數據管理系統
 
 ## 技術架構
 
-| 前端 | 後端 | AI 模型 | 資料庫 |
-|------|------|---------|--------|
-| HTML/CSS/JS | Flask | YOLOv8 | Firebase |
-| PWA | Python | Google Gemini | Firestore |
-| Vercel | BentoML | RAG | |
+**前端**：HTML / CSS / JavaScript / PWA
+
+**後端**：Flask / Python / BentoML
+
+**AI 模型**：YOLOv8 / Google Gemini / RAG
+
+**部署**：Vercel (前端) / Google Cloud Run (後端)
+
+**資料庫**：Firebase
 
 ## 核心 AI 流程
 
