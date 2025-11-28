@@ -1,5 +1,5 @@
 // 健康數據助理 Service Worker
-const CACHE_NAME = 'health-assistant-v1';
+const CACHE_NAME = 'health-assistant-v2';
 const urlsToCache = [
   '/',
   '/dashboard.html',
@@ -54,7 +54,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 攔截請求
+// 攔截請求 - 使用 Network First 策略
 self.addEventListener('fetch', event => {
   // 只處理 GET 請求
   if (event.request.method !== 'GET') return;
@@ -66,37 +66,47 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // HTML 頁面使用 Network First 策略
+  if (event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // 網路成功，更新快取
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // 離線時使用快取
+          return caches.match(event.request).then(response => {
+            return response || caches.match('/dashboard.html');
+          });
+        })
+    );
+    return;
+  }
+
+  // 其他資源（CSS, JS, 圖片）使用 Cache First
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // 有快取就用快取
         if (response) {
           return response;
         }
-
-        // 沒快取就走網路，並存入快取
         return fetch(event.request).then(response => {
-          // 檢查是否為有效回應
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-
-          // 複製回應（因為回應只能使用一次）
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
           return response;
         });
-      })
-      .catch(() => {
-        // 離線時顯示離線頁面（如果是 HTML 請求）
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/dashboard.html');
-        }
       })
   );
 });
