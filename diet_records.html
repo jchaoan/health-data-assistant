@@ -1084,6 +1084,11 @@
                 }
 
                 console.log('[飲食記錄] 找到', data.data.length, '筆記錄');
+
+                // Debug: 檢查圖片資料
+                data.data.forEach((record, index) => {
+                    console.log(`[飲食記錄] 記錄${index}: has_image=${record.has_image}, image_base64長度=${record.image_base64 ? record.image_base64.length : 0}`);
+                });
                 // 顯示記錄
                 displayRecords(data.data);
 
