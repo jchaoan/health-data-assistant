@@ -1366,7 +1366,8 @@
 
             if (originalSize <= maxSizeKB) {
                 console.log('[壓縮] 圖片已經足夠小，不需壓縮');
-                return base64Data;
+                // 確保回傳純 base64（去掉前綴）
+                return base64Data.replace(/^data:image\/\w+;base64,/, '');
             }
 
             return new Promise((resolve) => {
@@ -1408,8 +1409,10 @@
                         result = canvas.toDataURL('image/jpeg', quality);
                     }
 
-                    console.log('[壓縮] 壓縮後大小:', Math.round(result.length * 0.75 / 1024), 'KB, 品質:', quality.toFixed(1));
-                    resolve(result);
+                    // 移除 data:image/jpeg;base64, 前綴，只保留純 base64
+                    const base64Only = result.replace(/^data:image\/\w+;base64,/, '');
+                    console.log('[壓縮] 壓縮後大小:', Math.round(base64Only.length * 0.75 / 1024), 'KB, 品質:', quality.toFixed(1));
+                    resolve(base64Only);
                 };
                 img.onerror = () => {
                     console.error('[壓縮] 圖片載入失敗');
