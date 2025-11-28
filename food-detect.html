@@ -1210,11 +1210,10 @@
 
                     // 暫存辨識結果，等待用戶確認後再儲存
                     lastAnalysisResult = data;
-                    lastImageBase64 = data.image_data || null;
+                    // 不再從 API 取圖片，使用預覽時暫存的 lastImageBase64
 
                     // Debug: 檢查圖片資料
-                    console.log('[辨識] API 回傳 image_data 長度:', data.image_data ? data.image_data.length : 0);
-                    console.log('[辨識] lastImageBase64 長度:', lastImageBase64 ? lastImageBase64.length : 0);
+                    console.log('[辨識] 使用預覽暫存的圖片，長度:', lastImageBase64 ? lastImageBase64.length : 0);
 
                     // 顯示儲存按鈕（只有已登入用戶才顯示）
                     if (currentUser) {
@@ -1361,6 +1360,8 @@
         };
 
         // 壓縮圖片 Base64（確保小於 900KB）
+        // 輸入：純 base64 字串（不含 data:image 前綴）
+        // 輸出：純 base64 字串
         async function compressImageBase64(base64Data, maxSizeKB = 900) {
             if (!base64Data) return null;
 
@@ -1370,8 +1371,7 @@
 
             if (originalSize <= maxSizeKB) {
                 console.log('[壓縮] 圖片已經足夠小，不需壓縮');
-                // 確保回傳純 base64（去掉前綴）
-                return base64Data.replace(/^data:image\/\w+;base64,/, '');
+                return base64Data; // 已經是純 base64
             }
 
             return new Promise((resolve) => {
@@ -1422,7 +1422,8 @@
                     console.error('[壓縮] 圖片載入失敗');
                     resolve(null); // 壓縮失敗就不儲存圖片
                 };
-                img.src = base64Data;
+                // 需要完整的 data URL 才能載入圖片
+                img.src = 'data:image/jpeg;base64,' + base64Data;
             });
         }
 
@@ -1518,14 +1519,19 @@
             document.getElementById('previewImage').src = '';
         };
 
-        // 圖片預覽功能
+        // 圖片預覽功能 - 同時暫存 base64
         function showPreview(file) {
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    document.getElementById('previewImage').src = e.target.result;
+                    const dataUrl = e.target.result;
+                    document.getElementById('previewImage').src = dataUrl;
                     document.getElementById('previewContainer').style.display = 'block';
                     document.getElementById('fileName').textContent = `已選擇: ${file.name}`;
+
+                    // 暫存圖片 base64（去掉 data:image/xxx;base64, 前綴）
+                    lastImageBase64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+                    console.log('[預覽] 暫存圖片 base64 長度:', lastImageBase64.length);
                 };
                 reader.readAsDataURL(file);
             }
