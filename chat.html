@@ -89,18 +89,29 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* 個人資料面板 */
+        /* 個人資料面板 - 手機版預設隱藏 */
         .profile-panel {
             background: #f8f9fa;
             padding: 15px 20px;
             border-bottom: 2px solid #e9ecef;
-            display: flex;
+            display: none; /* 預設隱藏 */
             gap: 15px;
             align-items: center;
         }
 
+        .profile-panel.expanded {
+            display: flex; /* 展開時顯示 */
+        }
+
         .profile-panel.collapsed {
             display: none;
+        }
+
+        /* 手機版隱藏 metrics-panel */
+        @media (max-width: 768px) {
+            .profile-panel, .metrics-panel {
+                display: none !important;
+            }
         }
 
         .profile-item {

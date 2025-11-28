@@ -528,24 +528,106 @@
             color: #888;
         }
 
-        /* 響應式 */
-        @media (max-width: 400px) {
+        /* 響應式 - 手機版 */
+        @media (max-width: 768px) {
             body {
                 padding: 10px;
-                padding-bottom: 80px;
+                padding-bottom: 100px;
             }
 
-            .user-header, .nutrition-card, .recent-card {
-                padding: 15px;
+            .user-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .user-info {
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nutrition-card, .recent-card {
+                padding: 18px;
+                border-radius: 15px;
             }
 
             .calories-circle {
+                width: 140px;
+                height: 140px;
+            }
+
+            .calories-circle svg {
+                width: 140px;
+                height: 140px;
+            }
+
+            .calories-current {
+                font-size: 1.8em;
+            }
+
+            .calories-target {
+                font-size: 0.85em;
+            }
+
+            .macros-grid {
+                gap: 10px;
+            }
+
+            .macro-item {
+                padding: 12px 8px;
+                min-width: 0;
+            }
+
+            .macro-icon {
+                font-size: 1.3em;
+            }
+
+            .macro-value {
+                font-size: 0.9em;
+                white-space: nowrap;
+            }
+
+            .macro-label {
+                font-size: 0.8em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .calories-circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .calories-circle svg {
                 width: 120px;
                 height: 120px;
             }
 
             .calories-current {
                 font-size: 1.5em;
+            }
+
+            .macros-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .macro-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-align: left;
+                padding: 10px 15px;
+            }
+
+            .macro-bar {
+                flex: 1;
+                margin-top: 0;
             }
         }
     </style>
