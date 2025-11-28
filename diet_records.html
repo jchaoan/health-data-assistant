@@ -1179,7 +1179,7 @@
                 <div class="record-body">
                     <!-- 圖片區域 -->
                     <div class="record-image-section">
-                        ${record.has_image && (record.image_base64 || record.image_path) ? `
+                        ${(record.image_base64 || record.image_path) ? `
                             <img class="record-image"
                                  src="${record.image_base64 ?
                                       `data:image/${record.image_format || 'jpeg'};base64,${record.image_base64}` :
