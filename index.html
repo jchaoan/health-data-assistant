@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>健康數據助理 - AI 智慧營養追蹤系統</title>
     <!-- PWA 支援 -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/public/manifest.json">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="健康助理">
-    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="apple-touch-icon" href="/public/logo.png">
 
     <!-- 共用工具函數 -->
     <script src="/js/utils.js"></script>
@@ -547,13 +547,13 @@
     <!-- 導航列 -->
     <nav class="navbar">
         <div class="logo-text">
-            <img src="logo.png" alt="Logo" class="logo-img">
+            <img src="/public/logo.png" alt="Logo" class="logo-img">
             健康數據助理
         </div>
         <div class="nav-buttons">
-            <a href="install.html" class="btn-nav btn-login-nav">📲 安裝App</a>
-            <a href="login.html" class="btn-nav btn-login-nav">登入</a>
-            <a href="register.html" class="btn-nav btn-register-nav">免費註冊</a>
+            <a href="/install" class="btn-nav btn-login-nav">📲 安裝App</a>
+            <a href="/login" class="btn-nav btn-login-nav">登入</a>
+            <a href="/register" class="btn-nav btn-register-nav">免費註冊</a>
         </div>
     </nav>
 
@@ -566,7 +566,7 @@
             讓您輕鬆掌握每一餐的營養攝取
         </p>
         <div class="hero-buttons">
-            <a href="register.html" class="btn-hero btn-start">
+            <a href="/register" class="btn-hero btn-start">
                 立即開始使用
             </a>
             <a href="#features" class="btn-hero btn-demo">
@@ -682,7 +682,7 @@
     <section class="cta-section">
         <h2 class="fade-in">準備好開始您的健康之旅了嗎？</h2>
         <p class="fade-in">免費註冊，立即體驗 AI 智慧營養追蹤</p>
-        <a href="register.html" class="btn-cta fade-in">免費開始使用</a>
+        <a href="/register" class="btn-cta fade-in">免費開始使用</a>
     </section>
 
     <!-- Footer -->
@@ -735,23 +735,23 @@
                 // 更新導航列按鈕
                 if (hasProfile) {
                     navButtons.innerHTML = `
-                        <a href="index.html" class="btn-nav btn-register-nav">進入系統</a>
+                        <a href="/dashboard" class="btn-nav btn-register-nav">進入系統</a>
                     `;
                     // 更新底部 CTA
                     ctaSection.innerHTML = `
                         <h2 class="fade-in visible">歡迎回來！</h2>
                         <p class="fade-in visible">您已登入，可以直接進入系統開始使用</p>
-                        <a href="index.html" class="btn-cta fade-in visible">進入系統</a>
+                        <a href="/dashboard" class="btn-cta fade-in visible">進入系統</a>
                     `;
                 } else {
                     navButtons.innerHTML = `
-                        <a href="profile_setup.html" class="btn-nav btn-register-nav">完成資料設定</a>
+                        <a href="/profile-setup" class="btn-nav btn-register-nav">完成資料設定</a>
                     `;
                     // 更新底部 CTA
                     ctaSection.innerHTML = `
                         <h2 class="fade-in visible">還差一步！</h2>
                         <p class="fade-in visible">完成個人資料設定，即可開始使用完整功能</p>
-                        <a href="profile_setup.html" class="btn-cta fade-in visible">完成資料設定</a>
+                        <a href="/profile-setup" class="btn-cta fade-in visible">完成資料設定</a>
                     `;
                 }
             } else {
