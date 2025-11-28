@@ -581,7 +581,7 @@
                     <img id="userAvatar" class="user-avatar" style="display: none;">
                     <span id="userName"></span>
                     <button class="btn btn-primary" onclick="fixNutritionData()">🔧 修復資料</button>
-                    <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">返回主頁</button>
                     <button class="btn btn-secondary" onclick="window.location.href='diet_records.html'">飲食記錄</button>
                 </div>
             </div>
@@ -596,7 +596,7 @@
         <div id="emptyState" class="empty-state" style="display: none;">
             <h2>尚無統計資料</h2>
             <p>開始記錄您的飲食，即可查看詳細統計分析！</p>
-            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+            <button class="btn btn-primary" onclick="window.location.href='food-detect.html'">
                 📸 開始記錄
             </button>
         </div>
@@ -700,7 +700,7 @@
             <div class="nav-icon">🍽️</div>
             <span class="nav-label">記錄</span>
         </a>
-        <a href="index.html" class="nav-item">
+        <a href="food-detect.html" class="nav-item">
             <div class="nav-icon">📷</div>
             <span class="nav-label">辨識</span>
         </a>
@@ -837,7 +837,7 @@
             } else {
                 console.log('[統計] 未登入，導向登入頁');
                 alert('請先登入');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }
         });
 

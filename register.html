@@ -554,7 +554,7 @@
             const hasProfile = await checkUserProfileExists(user.uid);
             if (hasProfile) {
                 console.log('[OK] 用戶已有個人資料，跳轉到主頁');
-                window.location.href = 'index.html';
+                window.location.href = 'dashboard.html';
             } else {
                 console.log('[INFO] 用戶尚未設定個人資料，跳轉到設定頁面');
                 window.location.href = 'profile_setup.html';

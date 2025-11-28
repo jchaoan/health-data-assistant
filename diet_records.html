@@ -832,7 +832,7 @@
             <div class="user-info">
                 <img id="userAvatar" class="user-avatar" style="display: none;">
                 <span id="userName"></span>
-                <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">返回主頁</button>
                 <button class="btn btn-primary" id="logoutBtn" style="display: none;">登出</button>
             </div>
         </div>
@@ -852,7 +852,7 @@
         <div id="emptyState" class="empty-state" style="display: none;">
             <h2>尚無飲食記錄</h2>
             <p>開始記錄您的第一餐吧！</p>
-            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+            <button class="btn btn-primary" onclick="window.location.href='food-detect.html'">
                 📸 開始拍照記錄
             </button>
         </div>
@@ -868,7 +868,7 @@
             <div class="nav-icon">🍽️</div>
             <span class="nav-label">記錄</span>
         </a>
-        <a href="index.html" class="nav-item">
+        <a href="food-detect.html" class="nav-item">
             <div class="nav-icon">📷</div>
             <span class="nav-label">辨識</span>
         </a>
@@ -992,7 +992,7 @@
                 if (!isInitializing) {
                     console.log('[飲食記錄] 已初始化完成但無用戶，導向登入頁');
                     alert('請先登入');
-                    window.location.href = 'index.html';
+                    window.location.href = 'login.html';
                 } else {
                     console.log('[飲食記錄] 等待 1 秒讓 Firebase Auth 恢復 session...');
                     // 給 Firebase Auth 一些時間來恢復 session
@@ -1004,7 +1004,7 @@
                         if (!checkUser) {
                             console.log('[飲食記錄] 1 秒後仍無用戶，導向登入頁');
                             alert('請先登入');
-                            window.location.href = 'index.html';
+                            window.location.href = 'login.html';
                         } else {
                             console.log('[飲食記錄] 1 秒後找到用戶，重新觸發載入');
                             // 用戶已恢復，重新觸發載入
@@ -1019,7 +1019,7 @@
                 console.log('[飲食記錄] ✗ Firebase Auth 已初始化但無用戶，導向登入頁');
                 document.getElementById('loading').style.display = 'none';
                 alert('請先登入');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }
         });
 
@@ -1027,7 +1027,7 @@
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
                 await auth.signOut();
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error('登出失敗:', error);
                 alert('登出失敗: ' + error.message);

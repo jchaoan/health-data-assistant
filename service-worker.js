@@ -1,23 +1,23 @@
 // 健康數據助理 Service Worker
-const CACHE_NAME = 'bentoai-v3';
+const CACHE_NAME = 'health-assistant-v1';
 const urlsToCache = [
   '/',
-  '/public/dashboard.html',
-  '/public/index.html',
-  '/public/chat.html',
-  '/public/diet_records.html',
-  '/public/statistics.html',
-  '/public/exercise.html',
-  '/public/settings.html',
-  '/public/profile_edit.html',
-  '/public/profile_setup.html',
-  '/public/login.html',
-  '/public/register.html',
-  '/public/welcome.html',
-  '/public/verify-email.html',
-  '/public/install.html',
-  '/public/logo.png',
-  '/public/manifest.json',
+  '/dashboard.html',
+  '/food-detect.html',
+  '/chat.html',
+  '/diet_records.html',
+  '/statistics.html',
+  '/exercise.html',
+  '/settings.html',
+  '/profile_edit.html',
+  '/profile_setup.html',
+  '/login.html',
+  '/register.html',
+  '/welcome.html',
+  '/verify-email.html',
+  '/install.html',
+  '/logo.png',
+  '/manifest.json',
   '/js/utils.js',
   '/js/security.js',
   '/js/pwa-install.js'
@@ -95,7 +95,7 @@ self.addEventListener('fetch', event => {
       .catch(() => {
         // 離線時顯示離線頁面（如果是 HTML 請求）
         if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/public/dashboard.html');
+          return caches.match('/dashboard.html');
         }
       })
   );
@@ -105,8 +105,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data ? event.data.text() : '您有新的通知',
-    icon: '/public/logo.png',
-    badge: '/public/logo.png',
+    icon: '/logo.png',
+    badge: '/logo.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -123,6 +123,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/public/dashboard.html')
+    clients.openWindow('/dashboard.html')
   );
 });

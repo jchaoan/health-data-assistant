@@ -824,7 +824,7 @@
         <div class="header">
             <h1><img src="logo.png" alt="Logo" class="header-logo">帳號設定</h1>
             <div class="nav-buttons">
-                <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">返回主頁</button>
                 <button class="btn btn-secondary" onclick="window.location.href='diet_records.html'">飲食記錄</button>
                 <button class="btn btn-secondary" onclick="window.location.href='statistics.html'">統計分析</button>
             </div>
@@ -1077,7 +1077,7 @@
             <div class="nav-icon">🍽️</div>
             <span class="nav-label">記錄</span>
         </a>
-        <a href="index.html" class="nav-item">
+        <a href="food-detect.html" class="nav-item">
             <div class="nav-icon">📷</div>
             <span class="nav-label">辨識</span>
         </a>
@@ -1246,7 +1246,7 @@
             } else {
                 console.log('[設定] 未登入，導向登入頁');
                 alert('請先登入');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }
         });
 
@@ -1573,7 +1573,7 @@
         async function logout() {
             try {
                 await auth.signOut();
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error('[設定] 登出失敗:', error);
                 alert('登出失敗: ' + error.message);
@@ -1795,7 +1795,7 @@
 
                 notification.onclick = () => {
                     window.focus();
-                    window.location.href = 'index.html';
+                    window.location.href = 'food-detect.html';
                     notification.close();
                 };
             }
