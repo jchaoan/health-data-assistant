@@ -1,22 +1,23 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/public/welcome.html" },
-    { "source": "/welcome", "destination": "/public/welcome.html" },
-    { "source": "/dashboard", "destination": "/public/dashboard.html" },
-    { "source": "/index", "destination": "/public/index.html" },
-    { "source": "/chat", "destination": "/public/chat.html" },
-    { "source": "/diet-records", "destination": "/public/diet_records.html" },
-    { "source": "/statistics", "destination": "/public/statistics.html" },
-    { "source": "/settings", "destination": "/public/settings.html" },
-    { "source": "/login", "destination": "/public/login.html" },
-    { "source": "/register", "destination": "/public/register.html" },
-    { "source": "/verify-email", "destination": "/public/verify-email.html" },
-    { "source": "/install", "destination": "/public/install.html" },
-    { "source": "/profile-setup", "destination": "/public/profile_setup.html" },
-    { "source": "/profile-edit", "destination": "/public/profile_edit.html" },
-    { "source": "/exercise", "destination": "/public/exercise.html" },
-    { "source": "/logo.png", "destination": "/public/logo.png" },
-    { "source": "/manifest.json", "destination": "/public/manifest.json" },
-    { "source": "/service-worker.js", "destination": "/public/service-worker.js" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/", "dest": "/public/welcome.html" },
+    { "src": "/welcome", "dest": "/public/welcome.html" },
+    { "src": "/dashboard", "dest": "/public/dashboard.html" },
+    { "src": "/index", "dest": "/public/index.html" },
+    { "src": "/chat", "dest": "/public/chat.html" },
+    { "src": "/diet-records", "dest": "/public/diet_records.html" },
+    { "src": "/statistics", "dest": "/public/statistics.html" },
+    { "src": "/settings", "dest": "/public/settings.html" },
+    { "src": "/login", "dest": "/public/login.html" },
+    { "src": "/register", "dest": "/public/register.html" },
+    { "src": "/verify-email", "dest": "/public/verify-email.html" },
+    { "src": "/install", "dest": "/public/install.html" },
+    { "src": "/profile-setup", "dest": "/public/profile_setup.html" },
+    { "src": "/profile-edit", "dest": "/public/profile_edit.html" },
+    { "src": "/exercise", "dest": "/public/exercise.html" },
+    { "src": "/logo.png", "dest": "/public/logo.png" },
+    { "src": "/manifest.json", "dest": "/public/manifest.json" },
+    { "src": "/service-worker.js", "dest": "/public/service-worker.js" }
   ]
 }
