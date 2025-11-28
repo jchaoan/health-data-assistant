@@ -1356,6 +1356,69 @@
             }
         };
 
+        // 壓縮圖片 Base64（確保小於 900KB）
+        async function compressImageBase64(base64Data, maxSizeKB = 900) {
+            if (!base64Data) return null;
+
+            // 檢查原始大小
+            const originalSize = base64Data.length * 0.75 / 1024; // 估算 KB
+            console.log('[壓縮] 原始圖片大小:', Math.round(originalSize), 'KB');
+
+            if (originalSize <= maxSizeKB) {
+                console.log('[壓縮] 圖片已經足夠小，不需壓縮');
+                return base64Data;
+            }
+
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 計算需要縮小的比例
+                    const ratio = Math.sqrt(maxSizeKB / originalSize);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+
+                    // 最大尺寸限制
+                    const maxDim = 800;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round(height * maxDim / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round(width * maxDim / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 嘗試不同品質直到符合大小
+                    let quality = 0.7;
+                    let result = canvas.toDataURL('image/jpeg', quality);
+
+                    while (result.length * 0.75 / 1024 > maxSizeKB && quality > 0.1) {
+                        quality -= 0.1;
+                        result = canvas.toDataURL('image/jpeg', quality);
+                    }
+
+                    console.log('[壓縮] 壓縮後大小:', Math.round(result.length * 0.75 / 1024), 'KB, 品質:', quality.toFixed(1));
+                    resolve(result);
+                };
+                img.onerror = () => {
+                    console.error('[壓縮] 圖片載入失敗');
+                    resolve(null); // 壓縮失敗就不儲存圖片
+                };
+                img.src = base64Data;
+            });
+        }
+
         // 儲存辨識結果到 Firebase
         window.saveToFirebase = async () => {
             if (!currentUser || !lastAnalysisResult) {
@@ -1368,14 +1431,17 @@
 
             saveBtn.disabled = true;
             saveBtn.textContent = '儲存中...';
-            saveStatus.innerHTML = '<div style="color: #667eea;">正在儲存...</div>';
+            saveStatus.innerHTML = '<div style="color: #667eea;">正在壓縮圖片並儲存...</div>';
 
             try {
+                // 壓縮圖片
+                const compressedImage = await compressImageBase64(lastImageBase64);
+
                 // Debug: 顯示要儲存的資料
                 console.log('[儲存] 準備儲存飲食記錄...');
                 console.log('[儲存] items:', lastAnalysisResult.report.items);
                 console.log('[儲存] total_calories:', lastAnalysisResult.report.total_calories);
-                console.log('[儲存] 圖片大小:', lastImageBase64 ? lastImageBase64.length : 0);
+                console.log('[儲存] 壓縮後圖片大小:', compressedImage ? Math.round(compressedImage.length * 0.75 / 1024) + 'KB' : '無');
 
                 const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records', {
                     method: 'POST',
@@ -1393,7 +1459,7 @@
                         total_sodium: lastAnalysisResult.report.total_sodium || 0,
                         advice: lastAnalysisResult.report.advice || '',
                         mode: currentAnalyzeMode,
-                        image_base64: lastImageBase64
+                        image_base64: compressedImage
                     })
                 });
 
