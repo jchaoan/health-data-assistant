@@ -1,0 +1,435 @@
+/* ============================================
+   響應式設計通用樣式
+   支援：手機、平板、桌面
+   ============================================ */
+
+/* ===== 基礎設定 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px; /* 基準字體大小 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* ===== 響應式容器 ===== */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.container-fluid {
+    width: 100%;
+    padding: 0 20px;
+}
+
+.container-sm {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ===== 響應式網格系統 ===== */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.col {
+    flex: 1;
+    padding: 0 10px;
+}
+
+.col-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+.col-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+.col-3 { flex: 0 0 25%; max-width: 25%; }
+.col-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+.col-5 { flex: 0 0 41.666%; max-width: 41.666%; }
+.col-6 { flex: 0 0 50%; max-width: 50%; }
+.col-7 { flex: 0 0 58.333%; max-width: 58.333%; }
+.col-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+.col-9 { flex: 0 0 75%; max-width: 75%; }
+.col-10 { flex: 0 0 83.333%; max-width: 83.333%; }
+.col-11 { flex: 0 0 91.666%; max-width: 91.666%; }
+.col-12 { flex: 0 0 100%; max-width: 100%; }
+
+/* ===== 響應式文字大小 ===== */
+.h1, h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+.h2, h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); }
+.h3, h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
+.h4, h4 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
+.h5, h5 { font-size: clamp(1rem, 2vw, 1.25rem); }
+.h6, h6 { font-size: clamp(0.9rem, 1.5vw, 1rem); }
+
+/* ===== 響應式間距 ===== */
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 1rem; }
+.p-4 { padding: 1.5rem; }
+.p-5 { padding: 3rem; }
+
+.m-1 { margin: 0.25rem; }
+.m-2 { margin: 0.5rem; }
+.m-3 { margin: 1rem; }
+.m-4 { margin: 1.5rem; }
+.m-5 { margin: 3rem; }
+
+/* ===== 響應式顯示控制 ===== */
+.d-none { display: none !important; }
+.d-block { display: block !important; }
+.d-flex { display: flex !important; }
+.d-grid { display: grid !important; }
+
+/* ===== 手機版 (< 576px) ===== */
+@media (max-width: 575px) {
+    html {
+        font-size: 14px;
+    }
+
+    .container,
+    .container-sm {
+        padding: 0 15px;
+    }
+
+    .row {
+        margin: 0 -5px;
+    }
+
+    .col {
+        padding: 0 5px;
+    }
+
+    /* 手機版單列排版 */
+    .col-xs-12 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* 手機版隱藏 */
+    .d-xs-none {
+        display: none !important;
+    }
+
+    /* 手機版顯示 */
+    .d-xs-block {
+        display: block !important;
+    }
+
+    /* 手機版間距調整 */
+    .p-xs-2 { padding: 0.5rem; }
+    .p-xs-3 { padding: 1rem; }
+
+    .m-xs-2 { margin: 0.5rem; }
+    .m-xs-3 { margin: 1rem; }
+}
+
+/* ===== 平板直向 (576px - 767px) ===== */
+@media (min-width: 576px) and (max-width: 767px) {
+    .col-sm-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+    .col-sm-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+    .col-sm-3 { flex: 0 0 25%; max-width: 25%; }
+    .col-sm-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+    .col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+    .col-sm-12 { flex: 0 0 100%; max-width: 100%; }
+
+    .d-sm-none { display: none !important; }
+    .d-sm-block { display: block !important; }
+}
+
+/* ===== 平板橫向 (768px - 991px) ===== */
+@media (min-width: 768px) and (max-width: 991px) {
+    .col-md-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+    .col-md-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+    .col-md-3 { flex: 0 0 25%; max-width: 25%; }
+    .col-md-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+    .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+    .col-md-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+    .col-md-12 { flex: 0 0 100%; max-width: 100%; }
+
+    .d-md-none { display: none !important; }
+    .d-md-block { display: block !important; }
+}
+
+/* ===== 小型桌面 (992px - 1199px) ===== */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .col-lg-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+    .col-lg-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+    .col-lg-3 { flex: 0 0 25%; max-width: 25%; }
+    .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+    .col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+    .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+    .col-lg-12 { flex: 0 0 100%; max-width: 100%; }
+
+    .d-lg-none { display: none !important; }
+    .d-lg-block { display: block !important; }
+}
+
+/* ===== 大型桌面 (≥ 1200px) ===== */
+@media (min-width: 1200px) {
+    .col-xl-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+    .col-xl-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+    .col-xl-3 { flex: 0 0 25%; max-width: 25%; }
+    .col-xl-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+    .col-xl-6 { flex: 0 0 50%; max-width: 50%; }
+    .col-xl-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+    .col-xl-12 { flex: 0 0 100%; max-width: 100%; }
+
+    .d-xl-none { display: none !important; }
+    .d-xl-block { display: block !important; }
+}
+
+/* ===== 觸控螢幕優化 ===== */
+@media (hover: none) and (pointer: coarse) {
+    /* 增加點擊區域 */
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* 增加表單元素間距 */
+    input,
+    select,
+    textarea {
+        font-size: 16px; /* 防止 iOS 自動縮放 */
+        padding: 12px;
+    }
+}
+
+/* ===== 打印優化 ===== */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+}
+
+/* ===== 高對比度模式 ===== */
+@media (prefers-contrast: high) {
+    body {
+        background: white;
+        color: black;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+}
+
+/* ===== 減少動畫模式 ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== 深色模式支援 ===== */
+@media (prefers-color-scheme: dark) {
+    .auto-dark {
+        background: #1a1a1a;
+        color: #e0e0e0;
+    }
+
+    .auto-dark a {
+        color: #64b5f6;
+    }
+
+    .auto-dark input,
+    .auto-dark select,
+    .auto-dark textarea {
+        background: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+}
+
+/* ===== 工具類別 ===== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+
+/* ===== 圖片響應式 ===== */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+.img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.img-contain {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ===== 影片響應式 ===== */
+.video-responsive {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 比例 */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-responsive iframe,
+.video-responsive video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== 卡片響應式 ===== */
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 575px) {
+    .card {
+        padding: 15px;
+        border-radius: 8px;
+    }
+}
+
+/* ===== 表格響應式 ===== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+    .table-responsive table {
+        min-width: 600px;
+    }
+}
+
+/* ===== 導航欄響應式 ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+@media (max-width: 767px) {
+    .navbar {
+        flex-direction: column;
+        padding: 10px 15px;
+    }
+
+    .navbar-menu {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* ===== 按鈕響應式 ===== */
+.btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+@media (max-width: 575px) {
+    .btn {
+        width: 100%;
+        padding: 14px 20px;
+    }
+
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+    }
+}
+
+/* ===== 表單響應式 ===== */
+.form-group {
+    margin-bottom: 20px;
+}
+
+@media (max-width: 575px) {
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+}

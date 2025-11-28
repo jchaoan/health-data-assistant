@@ -1,0 +1,117 @@
+rules_version = '2';
+
+/**
+ * BentoAI Firestore 安全規則
+ *
+ * 部署方式：
+ * 1. 到 Firebase Console -> Firestore -> 規則
+ * 2. 複製以下內容貼上
+ * 3. 點擊「發布」
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== 輔助函數 =====
+
+    // 檢查是否已登入
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // 檢查是否為資料擁有者
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 檢查是否為有效的時間戳記
+    function isValidTimestamp(field) {
+      return field is timestamp;
+    }
+
+    // ===== 用戶資料 (member) =====
+    match /member/{userId} {
+      // 只能讀取自己的資料
+      allow read: if isOwner(userId);
+
+      // 只能寫入自己的資料，且必須包含必要欄位
+      allow create: if isOwner(userId) &&
+                       request.resource.data.keys().hasAll(['height', 'weight', 'gender']);
+
+      allow update: if isOwner(userId);
+
+      // 不允許刪除用戶資料（保護資料完整性）
+      allow delete: if false;
+    }
+
+    // ===== 飲食記錄 (diet_records) =====
+    match /diet_records/{recordId} {
+      // 只能讀取自己的記錄
+      allow read: if isAuthenticated() &&
+                    resource.data.user_id == request.auth.uid;
+
+      // 建立記錄時必須包含 user_id 且為當前用戶
+      allow create: if isAuthenticated() &&
+                      request.resource.data.user_id == request.auth.uid &&
+                      request.resource.data.keys().hasAll(['user_id', 'created_at']);
+
+      // 只能更新自己的記錄
+      allow update: if isAuthenticated() &&
+                      resource.data.user_id == request.auth.uid &&
+                      request.resource.data.user_id == request.auth.uid;
+
+      // 只能刪除自己的記錄
+      allow delete: if isAuthenticated() &&
+                      resource.data.user_id == request.auth.uid;
+    }
+
+    // ===== 運動記錄 (exercise_records) =====
+    match /exercise_records/{recordId} {
+      allow read: if isAuthenticated() &&
+                    resource.data.user_id == request.auth.uid;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.user_id == request.auth.uid;
+
+      allow update: if isAuthenticated() &&
+                      resource.data.user_id == request.auth.uid;
+
+      allow delete: if isAuthenticated() &&
+                      resource.data.user_id == request.auth.uid;
+    }
+
+    // ===== 意見回饋 (feedback) =====
+    match /feedback/{feedbackId} {
+      // 只能建立回饋，不能讀取或修改（隱私保護）
+      allow create: if isAuthenticated() &&
+                      request.resource.data.user_id == request.auth.uid;
+
+      // 只能讀取自己的回饋
+      allow read: if isAuthenticated() &&
+                    resource.data.user_id == request.auth.uid;
+
+      // 不允許修改或刪除
+      allow update, delete: if false;
+    }
+
+    // ===== 聊天記錄 (chat_history) =====
+    match /chat_history/{chatId} {
+      allow read: if isAuthenticated() &&
+                    resource.data.user_id == request.auth.uid;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.user_id == request.auth.uid;
+
+      allow delete: if isAuthenticated() &&
+                      resource.data.user_id == request.auth.uid;
+
+      // 聊天記錄不允許修改
+      allow update: if false;
+    }
+
+    // ===== 預設：拒絕所有其他存取 =====
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

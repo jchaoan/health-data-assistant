@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "name": "health-data-assistant",
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "css/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/css/(.*)",
+      "dest": "/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/logo.png",
+      "dest": "/public/logo.png"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/public/manifest.json"
+    },
+    {
+      "src": "/service-worker.js",
+      "dest": "/public/service-worker.js"
+    },
+    {
+      "src": "/",
+      "dest": "/public/welcome.html"
+    },
+    {
+      "src": "/welcome",
+      "dest": "/public/welcome.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/public/dashboard.html"
+    },
+    {
+      "src": "/index",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/chat",
+      "dest": "/public/chat.html"
+    },
+    {
+      "src": "/diet-records",
+      "dest": "/public/diet_records.html"
+    },
+    {
+      "src": "/statistics",
+      "dest": "/public/statistics.html"
+    },
+    {
+      "src": "/settings",
+      "dest": "/public/settings.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/public/login.html"
+    },
+    {
+      "src": "/register",
+      "dest": "/public/register.html"
+    },
+    {
+      "src": "/verify-email",
+      "dest": "/public/verify-email.html"
+    },
+    {
+      "src": "/install",
+      "dest": "/public/install.html"
+    },
+    {
+      "src": "/profile-setup",
+      "dest": "/public/profile_setup.html"
+    },
+    {
+      "src": "/profile-edit",
+      "dest": "/public/profile_edit.html"
+    },
+    {
+      "src": "/exercise",
+      "dest": "/public/exercise.html"
+    },
+    {
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    }
+  ]
+}

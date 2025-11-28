@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 營養師聊天室</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/security.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Markdown 解析器 (marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 40px rgba(0,0,0,0.3);
+        }
+
+        /* 頂部標題欄 */
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .chat-header .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-header .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 個人資料面板 */
+        .profile-panel {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .profile-panel.collapsed {
+            display: none;
+        }
+
+        .profile-item {
+            flex: 1;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .profile-item.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .profile-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .profile-item select,
+        .profile-item input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* BMI 與 TDEE 面板 - 精簡版 */
+        .metrics-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 8px 15px;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .metric-label {
+            font-size: 0.7em;
+            color: #6c757d;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 2px 0;
+        }
+
+        .metric-status {
+            font-size: 0.65em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .metric-status.normal {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .metric-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .metric-status.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* 聊天訊息區域 */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 85%;
+        }
+
+        /* 可收合的長訊息 */
+        .message.ai .message-content.collapsible {
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .message.ai .message-content.collapsible::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(transparent, white);
+            pointer-events: none;
+        }
+
+        .message.ai .message-content.expanded {
+            max-height: none;
+        }
+
+        .message.ai .message-content.expanded::after {
+            display: none;
+        }
+
+        .expand-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .expand-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Markdown 渲染樣式 */
+        .message.ai .message-content h1,
+        .message.ai .message-content h2,
+        .message.ai .message-content h3 {
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .message.ai .message-content h1 { font-size: 1.4em; }
+        .message.ai .message-content h2 { font-size: 1.2em; }
+        .message.ai .message-content h3 { font-size: 1.1em; }
+
+        .message.ai .message-content p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .message.ai .message-content ul,
+        .message.ai .message-content ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        .message.ai .message-content li {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .message.ai .message-content strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .message.ai .message-content em {
+            color: #666;
+        }
+
+        .message.ai .message-content hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 15px 0;
+        }
+
+        .message.ai .message-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin: 10px 0;
+            color: #666;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .message.ai .message-content code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .message.ai .message-content pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        /* 免責聲明樣式 */
+        .message.ai .message-content p:last-of-type {
+            color: #888;
+            font-size: 0.9em;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.ai .message-avatar {
+            background: #28a745;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        /* 輸入區域 */
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* 載入動畫 */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #6c757d;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 歡迎訊息 */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .welcome-message h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .welcome-message p {
+            margin: 5px 0;
+        }
+
+        /* 快速問題建議 - 固定在輸入區上方 */
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 20px;
+            justify-content: center;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+            border-top: 1px solid #eee;
+        }
+
+        .quick-question-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .quick-question-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .chat-container {
+                border-radius: 0;
+            }
+
+            .profile-panel {
+                flex-direction: column;
+            }
+
+            .metrics-panel {
+                flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .metric-card {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        /* 滾動條樣式 */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* ===== 底部導航欄 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        /* chat 頁面特殊處理：為底部導航留出空間 */
+        .chat-container {
+            height: calc(100vh - 70px);
+        }
+
+        /* 手機版底部導航優化 */
+        @media (max-width: 480px) {
+            .nav-item {
+                font-size: 10px;
+                padding: 5px 5px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .bottom-nav {
+                padding: 5px 0;
+            }
+
+            .chat-container {
+                height: calc(100vh - 60px);
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .chat-container {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .chat-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .profile-panel {
+            background: #2a2a2a;
+            border-bottom-color: #444;
+        }
+
+        body.dark-mode .profile-item {
+            background: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .profile-item:hover {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .profile-item label {
+            color: #aaa;
+        }
+
+        body.dark-mode .profile-item select,
+        body.dark-mode .profile-item input {
+            color: #e0e0e0;
+            background: transparent;
+        }
+
+        body.dark-mode .metrics-panel {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .chat-messages {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .message.ai .message-content {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .message.ai .message-content h1,
+        body.dark-mode .message.ai .message-content h2,
+        body.dark-mode .message.ai .message-content h3 {
+            color: #667eea;
+        }
+
+        body.dark-mode .message.ai .message-content blockquote {
+            background: #444;
+            color: #ccc;
+        }
+
+        body.dark-mode .expand-btn {
+            background: #444;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        body.dark-mode .expand-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        body.dark-mode .quick-questions {
+            background: linear-gradient(to bottom, transparent, rgba(30,30,30,0.95));
+            border-top-color: #444;
+        }
+
+        body.dark-mode .quick-question-btn {
+            background: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .quick-question-btn:hover {
+            border-color: #667eea;
+            background: #444;
+        }
+
+        body.dark-mode .chat-input-area {
+            background: #1e1e1e;
+            border-top-color: #444;
+        }
+
+        body.dark-mode .chat-input {
+            background: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .welcome-message {
+            color: #888;
+        }
+
+        body.dark-mode .welcome-message h2 {
+            color: #667eea;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .nav-item {
+            color: #888;
+        }
+
+        body.dark-mode .nav-item:hover,
+        body.dark-mode .nav-item.active {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- 頂部標題欄 -->
+        <div class="chat-header">
+            <h1>
+                <img src="logo.png" alt="Logo" class="header-logo">
+                AI 營養師
+            </h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">← 返回主頁</button>
+        </div>
+
+        <!-- 個人資料面板 -->
+        <div class="profile-panel" id="profilePanel">
+            <div class="profile-item">
+                <label>年齡</label>
+                <input type="number" id="userAge" placeholder="請輸入" min="1" max="120" onchange="updateProfile()">
+            </div>
+            <div class="profile-item">
+                <label>性別</label>
+                <select id="userGender" onchange="updateProfile()">
+                    <option value="">請選擇</option>
+                    <option value="male">男性</option>
+                    <option value="female">女性</option>
+                </select>
+            </div>
+            <div class="profile-item">
+                <label>身高 (公分)</label>
+                <input type="number" id="userHeight" placeholder="請輸入" min="100" max="250" onchange="updateProfile()">
+            </div>
+            <div class="profile-item">
+                <label>體重 (公斤)</label>
+                <input type="number" id="userWeight" placeholder="請輸入" min="20" max="300" onchange="updateProfile()">
+            </div>
+            <div class="profile-item">
+                <label>活動量</label>
+                <select id="userActivity" onchange="updateProfile()">
+                    <option value="">請選擇</option>
+                    <option value="1.2">久坐 (很少運動)</option>
+                    <option value="1.375">輕度活動 (每週1-3天)</option>
+                    <option value="1.55">中度活動 (每週3-5天)</option>
+                    <option value="1.725">高度活動 (每週6-7天)</option>
+                    <option value="1.9">非常高度活動 (體力勞動)</option>
+                </select>
+            </div>
+            <div class="profile-item">
+                <label>健康目標</label>
+                <select id="userGoal" onchange="updateProfile()">
+                    <option value="">請選擇</option>
+                    <option value="lose_weight">減重</option>
+                    <option value="gain_muscle">增肌</option>
+                    <option value="maintain">維持健康</option>
+                    <option value="diabetes">糖尿病管理</option>
+                    <option value="heart_health">心血管健康</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 聊天訊息區域 -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h2>👋 您好！我是您的 AI 營養師</h2>
+                <p>填寫上方個人資料後，我將提供更精準的個人化營養建議</p>
+            </div>
+
+        </div>
+
+        <!-- 快速問題建議 - 固定在輸入區上方 -->
+        <div class="quick-questions" id="quickQuestions">
+            <button class="quick-question-btn" onclick="sendQuickQuestion('我一天要吃多少蛋白質？')">
+                我一天要吃多少蛋白質？
+            </button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('想減肥該怎麼吃？')">
+                想減肥該怎麼吃？
+            </button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('糖尿病飲食建議')">
+                糖尿病飲食建議
+            </button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('高血壓要注意什麼？')">
+                高血壓要注意什麼？
+            </button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('增肌該怎麼吃？')">
+                增肌該怎麼吃？
+            </button>
+        </div>
+
+        <!-- 輸入區域 -->
+        <div class="chat-input-area">
+            <div class="chat-input-container">
+                <textarea
+                    class="chat-input"
+                    id="messageInput"
+                    placeholder="輸入您的問題..."
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部導航欄 -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <span class="nav-label">首頁</span>
+        </a>
+        <a href="diet_records.html" class="nav-item">
+            <div class="nav-icon">🍽️</div>
+            <span class="nav-label">記錄</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">📷</div>
+            <span class="nav-label">辨識</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <span class="nav-label">統計</span>
+        </a>
+        <a href="chat.html" class="nav-item active">
+            <div class="nav-icon">💬</div>
+            <span class="nav-label">諮詢</span>
+        </a>
+        <a href="exercise.html" class="nav-item">
+            <div class="nav-icon">🏃</div>
+            <span class="nav-label">運動</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <span class="nav-label">設定</span>
+        </a>
+    </nav>
+
+    <script>
+        // Firebase 配置（Web 版）
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // 全局變數
+        let conversationHistory = [];
+        let userProfile = {
+            age: '',
+            gender: '',
+            height: '',
+            weight: '',
+            activity: '',
+            goal: ''
+        };
+        let currentUser = null;
+        let userIdToken = null;
+
+        // 監聽登入狀態
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                // 取得 ID Token
+                userIdToken = await user.getIdToken();
+                console.log('用戶已登入:', user.email);
+
+                // ✅ 用戶登入時，清空舊資料並載入該用戶專屬資料
+                await loadUserProfileFromFirestore(user.uid);
+            } else {
+                currentUser = null;
+                userIdToken = null;
+                console.log('用戶未登入');
+
+                // ✅ 用戶登出時，清除所有個人資料（防止資料洩漏）
+                clearAllProfileData();
+            }
+        });
+
+        // 自動調整輸入框高度
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // 處理 Enter 鍵
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // 計算 BMI
+        function calculateBMI(weight, height) {
+            // BMI = 體重(kg) / 身高(m)²
+            const heightInMeters = height / 100;
+            return weight / (heightInMeters * heightInMeters);
+        }
+
+        // 計算 BMR (基礎代謝率) - Mifflin-St Jeor Equation
+        function calculateBMR(weight, height, age, gender) {
+            // 男性: BMR = 10 × 體重(kg) + 6.25 × 身高(cm) - 5 × 年齡 + 5
+            // 女性: BMR = 10 × 體重(kg) + 6.25 × 身高(cm) - 5 × 年齡 - 161
+            let bmr = 10 * weight + 6.25 * height - 5 * age;
+
+            if (gender === 'male') {
+                bmr += 5;
+            } else if (gender === 'female') {
+                bmr -= 161;
+            }
+
+            return bmr;
+        }
+
+        // 計算 TDEE (每日總消耗)
+        function calculateTDEE(bmr, activityLevel) {
+            return bmr * parseFloat(activityLevel);
+        }
+
+        // 取得 BMI 狀態
+        function getBMIStatus(bmi) {
+            if (bmi < 18.5) {
+                return { text: '過輕', class: 'warning' };
+            } else if (bmi < 24) {
+                return { text: '正常', class: 'normal' };
+            } else if (bmi < 27) {
+                return { text: '過重', class: 'warning' };
+            } else {
+                return { text: '肥胖', class: 'danger' };
+            }
+        }
+
+        // 更新個人資料
+        function updateProfile() {
+            userProfile.age = document.getElementById('userAge').value;
+            userProfile.gender = document.getElementById('userGender').value;
+            userProfile.height = document.getElementById('userHeight').value;
+            userProfile.weight = document.getElementById('userWeight').value;
+            userProfile.activity = document.getElementById('userActivity').value;
+            userProfile.goal = document.getElementById('userGoal').value;
+
+            // ❌ 不再儲存到 localStorage（已移除，防止跨用戶資料洩漏）
+            // localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+            // BMI/TDEE 面板已移除，只做計算不顯示
+
+            // 如果填寫完整，顯示提示（由 loadUserProfileFromFirestore 處理歡迎訊息）
+        }
+
+        // ✅ 從 Firestore 載入用戶專屬資料
+        async function loadUserProfileFromFirestore(userId) {
+            try {
+                console.log('🔄 開始載入 Firestore 資料，userId:', userId);
+
+                // 初始化 Firestore（需要額外引入）
+                if (!firebase.firestore) {
+                    console.warn('⚠️ Firestore 未載入，使用空白資料');
+                    clearAllProfileData();
+                    return;
+                }
+
+                const db = firebase.firestore();
+                console.log('📦 Firestore 已初始化');
+
+                const memberDoc = await db.collection('member').doc(userId).get();
+                console.log('📄 文檔查詢完成，exists:', memberDoc.exists);
+
+                if (memberDoc.exists) {
+                    const data = memberDoc.data();
+                    console.log('✅ 從 Firestore 載入用戶資料:', JSON.stringify(data, null, 2));
+
+                    // 將 Firestore 資料映射到表單
+                    userProfile.age = data.age || '';
+
+                    // 性別轉換（支援多種格式）
+                    if (data.gender === true || data.gender === 'male' || data.gender === '男') {
+                        userProfile.gender = 'male';
+                    } else if (data.gender === false || data.gender === 'female' || data.gender === '女') {
+                        userProfile.gender = 'female';
+                    } else {
+                        userProfile.gender = data.gender || '';
+                    }
+
+                    userProfile.height = data.height || '';
+                    userProfile.weight = data.weight || '';
+
+                    // 活動等級映射
+                    const activityMap = {
+                        'sedentary': '1.2',
+                        'lightly_active': '1.375',
+                        'moderately_active': '1.55',
+                        'very_active': '1.725',
+                        'extra_active': '1.9'
+                    };
+                    userProfile.activity = activityMap[data.activityLevel] || data.activityLevel || '';
+
+                    // 目標映射
+                    const goalMap = {
+                        0: 'maintain',
+                        1: 'lose_weight',
+                        2: 'gain_muscle'
+                    };
+                    userProfile.goal = goalMap[data.goal] || data.goal || '';
+
+                    console.log('📋 映射後的 userProfile:', JSON.stringify(userProfile, null, 2));
+
+                    // 更新表單顯示
+                    const ageEl = document.getElementById('userAge');
+                    const genderEl = document.getElementById('userGender');
+                    const heightEl = document.getElementById('userHeight');
+                    const weightEl = document.getElementById('userWeight');
+                    const activityEl = document.getElementById('userActivity');
+                    const goalEl = document.getElementById('userGoal');
+
+                    console.log('🎯 表單元素檢查:', {
+                        ageEl: !!ageEl,
+                        genderEl: !!genderEl,
+                        heightEl: !!heightEl,
+                        weightEl: !!weightEl,
+                        activityEl: !!activityEl,
+                        goalEl: !!goalEl
+                    });
+
+                    if (ageEl) ageEl.value = userProfile.age;
+                    if (genderEl) genderEl.value = userProfile.gender;
+                    if (heightEl) heightEl.value = userProfile.height;
+                    if (weightEl) weightEl.value = userProfile.weight;
+                    if (activityEl) activityEl.value = userProfile.activity;
+                    if (goalEl) goalEl.value = userProfile.goal;
+
+                    console.log('✅ 表單值已設定:', {
+                        age: ageEl?.value,
+                        gender: genderEl?.value,
+                        height: heightEl?.value,
+                        weight: weightEl?.value,
+                        activity: activityEl?.value,
+                        goal: goalEl?.value
+                    });
+
+                    // 計算並顯示 BMI/TDEE
+                    updateProfile();
+
+                    // 顯示歡迎訊息
+                    if (conversationHistory.length === 0 && userProfile.age && userProfile.height && userProfile.weight) {
+                        setTimeout(() => {
+                            const age = parseInt(userProfile.age);
+                            const height = parseFloat(userProfile.height);
+                            const weight = parseFloat(userProfile.weight);
+                            const bmi = calculateBMI(weight, height);
+                            const bmr = calculateBMR(weight, height, age, userProfile.gender);
+                            const tdee = calculateTDEE(bmr, userProfile.activity);
+
+                            addAIMessage(`歡迎回來！我已載入您的個人資料。\n\n您的健康指標：\n• BMI: ${bmi.toFixed(1)} (${getBMIStatus(bmi).text})\n• BMR: ${Math.round(bmr)} 大卡/天\n• TDEE: ${Math.round(tdee)} 大卡/天\n\n有什麼營養問題想問我嗎？`);
+                        }, 500);
+                    }
+                } else {
+                    console.log('ℹ️ 用戶尚未設定個人資料');
+                    clearAllProfileData();
+                }
+            } catch (error) {
+                console.error('❌ 載入 Firestore 資料失敗:', error);
+                clearAllProfileData();
+            }
+        }
+
+        // ✅ 清除所有個人資料（登出時調用，防止資料洩漏）
+        function clearAllProfileData() {
+            console.log('🧹 清除所有個人資料');
+
+            // 清空 userProfile 物件
+            userProfile = {
+                age: '',
+                gender: '',
+                height: '',
+                weight: '',
+                activity: '',
+                goal: ''
+            };
+
+            // 清空表單
+            document.getElementById('userAge').value = '';
+            document.getElementById('userGender').value = '';
+            document.getElementById('userHeight').value = '';
+            document.getElementById('userWeight').value = '';
+            document.getElementById('userActivity').value = '';
+            document.getElementById('userGoal').value = '';
+
+            // 清空對話歷史
+            conversationHistory = [];
+
+            // 清空聊天訊息（保留歡迎訊息）
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="welcome-message">
+                    <h2>👋 您好！我是您的 AI 營養師</h2>
+                    <p>填寫上方個人資料後，我將提供更精準的個人化營養建議</p>
+                </div>
+            `;
+
+            // ❌ 不再使用 localStorage（已移除）
+            // localStorage.removeItem('userProfile');
+        }
+
+        // ⚠️ 廢棄舊函數（不再使用 localStorage）
+        function loadProfile() {
+            console.warn('⚠️ loadProfile() 已廢棄，請使用 loadUserProfileFromFirestore()');
+            // 不做任何事，防止載入舊資料
+        }
+
+        // 發送快速問題
+        function sendQuickQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+
+        // 發送訊息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // 顯示用戶訊息
+            addUserMessage(message);
+            input.value = '';
+            input.style.height = 'auto';
+
+            // 顯示載入動畫
+            showTypingIndicator();
+
+            // 禁用發送按鈕
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                // 準備請求資料
+                const requestData = {
+                    message: message,
+                    profile: userProfile,
+                    history: conversationHistory.slice(-6) // 只傳最近 3 輪對話
+                };
+
+                // 如果用戶已登入，加入 ID Token
+                if (userIdToken) {
+                    requestData.id_token = userIdToken;
+                    console.log('✅ 已附帶 Firebase ID Token');
+                }
+
+                // 發送到後端
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                // 移除載入動畫
+                removeTypingIndicator();
+
+                if (data.success) {
+                    // 顯示 AI 回應
+                    addAIMessage(data.answer);
+
+                    // 如果使用了飲食記錄，顯示提示
+                    if (data.diet_records_count && data.diet_records_count > 0) {
+                        console.log(`✅ AI 已參考您的 ${data.diet_records_count} 筆飲食記錄`);
+                        // 可以在聊天界面顯示小提示
+                        addSystemMessage(`💡 AI 已參考您過去 ${data.diet_records_count} 筆飲食記錄提供建議`);
+                    }
+
+                    // 更新對話歷史
+                    conversationHistory.push({
+                        user: message,
+                        ai: data.answer
+                    });
+                } else {
+                    addAIMessage('抱歉，系統發生錯誤，請稍後再試。');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addAIMessage('抱歉，無法連接到服務器，請檢查網路連接。');
+                console.error('Error:', error);
+            }
+
+            // 啟用發送按鈕
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        // 添加用戶訊息
+        function addUserMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${escapeHtml(text)}
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+                <div class="message-avatar">👤</div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // 添加 AI 訊息
+        function addAIMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+
+            // 檢查訊息長度，超過 500 字就可收合
+            const isLong = text.length > 500;
+            const messageId = 'msg-' + Date.now();
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🥗</div>
+                <div class="message-content ${isLong ? 'collapsible' : ''}" id="${messageId}">
+                    ${formatAIResponse(text)}
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+
+            // 如果是長訊息，加入展開/收合按鈕
+            if (isLong) {
+                const contentDiv = document.getElementById(messageId);
+                const expandBtn = document.createElement('button');
+                expandBtn.className = 'expand-btn';
+                expandBtn.textContent = '📖 展開完整回覆';
+                expandBtn.onclick = function() {
+                    if (contentDiv.classList.contains('expanded')) {
+                        contentDiv.classList.remove('expanded');
+                        expandBtn.textContent = '📖 展開完整回覆';
+                    } else {
+                        contentDiv.classList.add('expanded');
+                        expandBtn.textContent = '📕 收合回覆';
+                    }
+                };
+                contentDiv.parentElement.appendChild(expandBtn);
+            }
+
+            scrollToBottom();
+        }
+
+        // 添加系統提示訊息
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'system-message';
+            messageDiv.innerHTML = `
+                <div style="text-align: center; padding: 8px; margin: 10px 0; background: #e8f5e9; color: #2e7d32; border-radius: 8px; font-size: 0.85em;">
+                    ${escapeHtml(text)}
+                </div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // 顯示載入動畫
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🥗</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        // 移除載入動畫
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // 格式化 AI 回應（使用 marked.js 解析 Markdown）
+        function formatAIResponse(text) {
+            // 使用 marked.js 解析 Markdown（搭配安全過濾）
+            if (typeof marked !== 'undefined') {
+                // 設定 marked 選項
+                marked.setOptions({
+                    breaks: true,      // 支援換行 (GFM)
+                    gfm: true          // 啟用 GitHub Flavored Markdown
+                });
+
+                const html = marked.parse(text);
+                // 使用安全工具過濾 XSS
+                if (typeof BentoAISecurity !== 'undefined') {
+                    return BentoAISecurity.sanitizeHtml(html);
+                }
+                return html;
+            }
+
+            // 如果 marked 未載入，使用基本格式化
+            text = text.replace(/\n/g, '<br>');
+            text = text.replace(/^\*\s+/gm, '• ');
+            text = text.replace(/^-\s+/gm, '• ');
+            return text;
+        }
+
+        // 轉義 HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 獲取當前時間
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' +
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // 滾動到底部
+        function scrollToBottom() {
+            const messagesDiv = document.getElementById('chatMessages');
+            setTimeout(() => {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }, 100);
+        }
+
+        // ✅ 頁面載入時（資料由 onAuthStateChanged 自動載入）
+        window.onload = function() {
+            console.log('📄 頁面已載入，等待 Firebase Auth 狀態...');
+            // 不再調用 loadProfile()，改由 onAuthStateChanged 自動載入用戶專屬資料
+        };
+    </script>
+</body>
+</html>

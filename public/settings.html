@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帳號設定 - 營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 頁面標題 */
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* 用戶資訊卡片 */
+        .user-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .user-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+
+        /* 大頭貼上傳區域 */
+        .avatar-upload-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .avatar-upload-container:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .avatar-upload-overlay span {
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .avatar-upload-input {
+            display: none;
+        }
+
+        .user-name {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-email {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* 設定區塊 */
+        .settings-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .settings-section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .settings-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .settings-label h3 {
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .settings-label p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .settings-value {
+            font-size: 1.3em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .settings-action {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 個人資料網格 */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .profile-item-label {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+
+        .profile-item-value {
+            color: #333;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .profile-item-unit {
+            color: #999;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+        /* 統計卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: #666;
+        }
+
+        /* 編輯表單 */
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .edit-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        /* 載入中 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* 確認對話框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .settings-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .settings-action {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* ===== 底部導航欄 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        /* 為底部導航留出空間 */
+        body {
+            padding-bottom: 80px;
+        }
+
+        /* 手機版底部導航優化 */
+        @media (max-width: 480px) {
+            .nav-item {
+                font-size: 10px;
+                padding: 5px 5px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .bottom-nav {
+                padding: 5px 0;
+            }
+        }
+
+        /* ===== 開關元件樣式 ===== */
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(28px);
+        }
+
+        /* 選擇器樣式 */
+        .settings-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* 連結按鈕樣式 */
+        .settings-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+
+        .settings-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* 版本資訊樣式 */
+        .version-info {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        /* 意見回饋 Modal */
+        .feedback-form {
+            text-align: left;
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .feedback-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .feedback-type {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-type-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .feedback-type-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        /* 關於 APP 內容 */
+        .about-content {
+            text-align: left;
+        }
+
+        .about-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .about-item:last-child {
+            border-bottom: none;
+        }
+
+        .about-label {
+            color: #666;
+        }
+
+        .about-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .tech-badge {
+            padding: 6px 12px;
+            background: #f0f4ff;
+            color: #667eea;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        /* ===== 深色模式 ===== */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .header,
+        body.dark-mode .user-card,
+        body.dark-mode .settings-section,
+        body.dark-mode .stat-card,
+        body.dark-mode .modal-content {
+            background: #1e1e2e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .header h1,
+        body.dark-mode .settings-section h2 {
+            color: #a78bfa;
+        }
+
+        body.dark-mode .user-name,
+        body.dark-mode .settings-label h3,
+        body.dark-mode .profile-item-value,
+        body.dark-mode .stat-value {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .user-email,
+        body.dark-mode .settings-label p,
+        body.dark-mode .profile-item-label,
+        body.dark-mode .stat-label {
+            color: #a0a0a0;
+        }
+
+        body.dark-mode .profile-item {
+            background: #2a2a3e;
+            border-left-color: #a78bfa;
+        }
+
+        body.dark-mode .settings-item {
+            border-bottom-color: #3a3a4e;
+        }
+
+        body.dark-mode .edit-form {
+            background: #2a2a3e;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select,
+        body.dark-mode .settings-select,
+        body.dark-mode .feedback-form textarea {
+            background: #1e1e2e;
+            color: #e0e0e0;
+            border-color: #3a3a4e;
+        }
+
+        body.dark-mode .form-group input:focus,
+        body.dark-mode .form-group select:focus,
+        body.dark-mode .settings-select:focus,
+        body.dark-mode .feedback-form textarea:focus {
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e2e;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .nav-item {
+            color: #a0a0a0;
+        }
+
+        body.dark-mode .nav-item:hover {
+            background: #2a2a3e;
+            color: #a78bfa;
+        }
+
+        body.dark-mode .nav-item.active {
+            color: #a78bfa;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #3a3a4e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #4a4a5e;
+        }
+
+        body.dark-mode .settings-link {
+            color: #a78bfa;
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode .settings-link:hover {
+            background: #a78bfa;
+            color: #1e1e2e;
+        }
+
+        body.dark-mode .modal {
+            background: rgba(0,0,0,0.7);
+        }
+
+        body.dark-mode .about-item {
+            border-bottom-color: #3a3a4e;
+        }
+
+        body.dark-mode .about-label {
+            color: #a0a0a0;
+        }
+
+        body.dark-mode .about-value {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .tech-badge {
+            background: #2a2a3e;
+            color: #a78bfa;
+        }
+
+        body.dark-mode .feedback-type-btn {
+            background: #1e1e2e;
+            color: #a0a0a0;
+            border-color: #3a3a4e;
+        }
+
+        body.dark-mode .feedback-type-btn.active {
+            background: #2a2a3e;
+            color: #a78bfa;
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode .version-info {
+            color: #666;
+        }
+
+        body.dark-mode .loading {
+            background: #1e1e2e;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頁面標題 -->
+        <div class="header">
+            <h1><img src="logo.png" alt="Logo" class="header-logo">帳號設定</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                <button class="btn btn-secondary" onclick="window.location.href='diet_records.html'">飲食記錄</button>
+                <button class="btn btn-secondary" onclick="window.location.href='statistics.html'">統計分析</button>
+            </div>
+        </div>
+
+        <!-- 載入中 -->
+        <div id="loading" class="loading">
+            <p>⏳ 載入設定中...</p>
+        </div>
+
+        <!-- 用戶資訊 -->
+        <div id="userCard" class="user-card" style="display: none;">
+            <div class="avatar-upload-container">
+                <img id="userAvatarLarge" class="user-avatar-large" src="" alt="用戶頭像">
+                <div class="avatar-upload-overlay" onclick="document.getElementById('avatarInput').click()">
+                    <span>📷<br>更換頭像</span>
+                </div>
+                <input type="file" id="avatarInput" class="avatar-upload-input" accept="image/*" onchange="uploadAvatar(event)">
+            </div>
+            <div class="user-name" id="displayName"></div>
+            <div class="user-email" id="userEmail"></div>
+        </div>
+
+        <!-- 個人資料 -->
+        <div id="profileSection" class="settings-section" style="display: none;">
+            <h2>👤 個人資料</h2>
+
+            <div class="profile-grid" id="profileGrid">
+                <!-- 動態載入 -->
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="toggleEditForm()">✏️ 編輯資料</button>
+            </div>
+
+            <!-- 編輯表單 -->
+            <div id="editForm" class="edit-form">
+                <h3 style="color: #667eea; margin-bottom: 20px;">編輯個人資料</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>年齡</label>
+                        <input type="number" id="editAge" min="1" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label>性別</label>
+                        <select id="editGender">
+                            <option value="true">男性</option>
+                            <option value="false">女性</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>身高 (cm)</label>
+                        <input type="number" id="editHeight" min="100" max="250" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>體重 (kg)</label>
+                        <input type="number" id="editWeight" min="30" max="300" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>健康目標</label>
+                        <select id="editGoal">
+                            <option value="0">維持體重</option>
+                            <option value="1">減重</option>
+                            <option value="2">增重</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>活動量</label>
+                        <select id="editActivityLevel">
+                            <option value="sedentary">久坐（很少運動）</option>
+                            <option value="lightly_active">輕度活動（每週運動1-3天）</option>
+                            <option value="moderately_active">中度活動（每週運動3-5天）</option>
+                            <option value="very_active">高度活動（每週運動6-7天）</option>
+                            <option value="extra_active">極高活動（每天訓練，體力工作）</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button class="btn btn-success" onclick="saveProfile()" style="flex: 1;">💾 儲存</button>
+                    <button class="btn btn-secondary" onclick="toggleEditForm()" style="flex: 1;">❌ 取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 帳號統計 -->
+        <div id="statsSection" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value" id="totalRecords">0</div>
+                    <div class="stat-label">總記錄數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="daysWithRecords">0</div>
+                    <div class="stat-label">有記錄的天數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="totalCalories">0</div>
+                    <div class="stat-label">總熱量 (大卡)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 資料管理 -->
+        <div id="dataManagement" class="settings-section" style="display: none;">
+            <h2>🗂️ 資料管理</h2>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>匯出資料</h3>
+                    <p>下載您的所有飲食記錄為 JSON 格式</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-primary" onclick="exportData()">匯出</button>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>清空所有記錄</h3>
+                    <p>⚠️ 警告：此操作將永久刪除所有飲食記錄，無法復原</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-danger" onclick="showClearAllModal()">清空記錄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 帳號管理 -->
+        <div id="accountManagement" class="settings-section" style="display: none;">
+            <h2>👤 帳號管理</h2>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>登出</h3>
+                    <p>登出您的帳號</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-secondary" onclick="logout()">登出</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 應用程式設定 -->
+        <div id="appSettings" class="settings-section" style="display: none;">
+            <h2>⚙️ 應用程式設定</h2>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>用餐提醒</h3>
+                    <p>在用餐時間提醒您記錄飲食</p>
+                </div>
+                <div class="settings-action">
+                    <div class="toggle-switch" id="mealReminderToggle" onclick="toggleMealReminder()"></div>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>目標達成通知</h3>
+                    <p>當您達成每日營養目標時通知您</p>
+                </div>
+                <div class="settings-action">
+                    <div class="toggle-switch" id="goalNotificationToggle" onclick="toggleGoalNotification()"></div>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>深色模式</h3>
+                    <p>切換深色主題以保護眼睛</p>
+                </div>
+                <div class="settings-action">
+                    <div class="toggle-switch" id="darkModeToggle" onclick="toggleDarkMode()"></div>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>單位設定</h3>
+                    <p>選擇身高體重的顯示單位</p>
+                </div>
+                <div class="settings-action">
+                    <select class="settings-select" id="unitSelect" onchange="changeUnit()">
+                        <option value="metric">公制 (cm/kg)</option>
+                        <option value="imperial">英制 (ft/lb)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 關於與幫助 -->
+        <div id="aboutSection" class="settings-section" style="display: none;">
+            <h2>❓ 關於與幫助</h2>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>操作說明</h3>
+                    <p>了解如何使用本系統的各項功能</p>
+                </div>
+                <div class="settings-action">
+                    <a href="welcome.html" class="settings-link">📖 查看說明</a>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>關於 APP</h3>
+                    <p>查看版本資訊與技術說明</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-primary" onclick="showAboutModal()">查看</button>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <div class="settings-label">
+                    <h3>意見回饋</h3>
+                    <p>提交您的建議或回報問題</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-primary" onclick="showFeedbackModal()">📝 提交回饋</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 版本資訊 -->
+        <div class="version-info" id="versionInfo" style="display: none;">
+            健康數據助理 v1.0.0 | Made with ❤️
+        </div>
+    </div>
+
+    <!-- 底部導航欄 -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <span class="nav-label">首頁</span>
+        </a>
+        <a href="diet_records.html" class="nav-item">
+            <div class="nav-icon">🍽️</div>
+            <span class="nav-label">記錄</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">📷</div>
+            <span class="nav-label">辨識</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <span class="nav-label">統計</span>
+        </a>
+        <a href="chat.html" class="nav-item">
+            <div class="nav-icon">💬</div>
+            <span class="nav-label">諮詢</span>
+        </a>
+        <a href="exercise.html" class="nav-item">
+            <div class="nav-icon">🏃</div>
+            <span class="nav-label">運動</span>
+        </a>
+        <a href="settings.html" class="nav-item active">
+            <div class="nav-icon">⚙️</div>
+            <span class="nav-label">設定</span>
+        </a>
+    </nav>
+
+    <!-- 確認對話框 -->
+    <div id="clearAllModal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ 確認清空所有記錄</h3>
+            <p>此操作將永久刪除您的所有飲食記錄，包括：</p>
+            <ul style="text-align: left; margin: 20px 0; padding-left: 40px;">
+                <li>所有辨識記錄</li>
+                <li>營養分析資料</li>
+                <li>歷史統計資訊</li>
+            </ul>
+            <p style="color: #dc3545; font-weight: bold;">此操作無法復原，確定要繼續嗎？</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="hideClearAllModal()">取消</button>
+                <button class="btn btn-danger" onclick="clearAllRecords()">確定刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 關於 APP Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <h3 style="margin-bottom: 25px;">📱 關於健康數據助理</h3>
+            <div class="about-content">
+                <div class="about-item">
+                    <span class="about-label">應用程式名稱</span>
+                    <span class="about-value">健康數據助理</span>
+                </div>
+                <div class="about-item">
+                    <span class="about-label">版本</span>
+                    <span class="about-value">1.0.0</span>
+                </div>
+                <div class="about-item">
+                    <span class="about-label">更新日期</span>
+                    <span class="about-value">2024-11-28</span>
+                </div>
+                <div class="about-item">
+                    <span class="about-label">開發者</span>
+                    <span class="about-value">健康數據助理團隊</span>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p style="color: #666; font-size: 0.95em; margin-bottom: 10px;">使用技術</p>
+                    <div class="tech-badges">
+                        <span class="tech-badge">YOLOv8</span>
+                        <span class="tech-badge">Google Gemini</span>
+                        <span class="tech-badge">Firebase</span>
+                        <span class="tech-badge">RAG</span>
+                        <span class="tech-badge">PWA</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 25px;">
+                <button class="btn btn-primary" onclick="hideAboutModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 意見回饋 Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 style="margin-bottom: 20px;">📝 意見回饋</h3>
+            <div class="feedback-form">
+                <p style="color: #666; margin-bottom: 15px;">請選擇回饋類型：</p>
+                <div class="feedback-type">
+                    <button class="feedback-type-btn active" onclick="selectFeedbackType(this, 'suggestion')">💡 建議</button>
+                    <button class="feedback-type-btn" onclick="selectFeedbackType(this, 'bug')">🐛 問題回報</button>
+                    <button class="feedback-type-btn" onclick="selectFeedbackType(this, 'other')">💬 其他</button>
+                </div>
+                <textarea id="feedbackContent" placeholder="請描述您的建議或遇到的問題..."></textarea>
+                <p style="color: #999; font-size: 0.85em; margin-bottom: 15px;">
+                    您的回饋將幫助我們改進服務，感謝您的寶貴意見！
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="hideFeedbackModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitFeedback()">提交回饋</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        let currentUser = null;
+        let hasCheckedAuth = false;
+        let profileData = null;
+
+        // 監聽登入狀態
+        auth.onAuthStateChanged(async (user) => {
+            if (hasCheckedAuth) return;
+            hasCheckedAuth = true;
+
+            if (user) {
+                console.log('[設定] 用戶已登入:', user.email);
+                currentUser = user;
+
+                // 顯示用戶資訊
+                document.getElementById('displayName').textContent = user.displayName || '使用者';
+                document.getElementById('userEmail').textContent = user.email;
+
+                if (user.photoURL) {
+                    document.getElementById('userAvatarLarge').src = user.photoURL;
+                } else {
+                    document.getElementById('userAvatarLarge').src = 'https://via.placeholder.com/120';
+                }
+
+                // 載入個人資料
+                await loadProfile();
+
+                // 載入統計資料
+                await loadStatistics();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('userCard').style.display = 'block';
+                document.getElementById('profileSection').style.display = 'block';
+                document.getElementById('statsSection').style.display = 'block';
+                document.getElementById('dataManagement').style.display = 'block';
+                document.getElementById('accountManagement').style.display = 'block';
+                document.getElementById('appSettings').style.display = 'block';
+                document.getElementById('aboutSection').style.display = 'block';
+                document.getElementById('versionInfo').style.display = 'block';
+
+                // 載入設定狀態
+                loadAppSettings();
+            } else {
+                console.log('[設定] 未登入，導向登入頁');
+                alert('請先登入');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // 載入個人資料
+        async function loadProfile() {
+            try {
+                const doc = await db.collection('member').doc(currentUser.uid).get();
+
+                if (doc.exists) {
+                    profileData = doc.data();
+                    console.log('[設定] 個人資料:', profileData);
+                    displayProfile(profileData);
+                } else {
+                    console.log('[設定] 尚未設定個人資料');
+                    document.getElementById('profileGrid').innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+                            <p style="font-size: 1.2em; margin-bottom: 15px;">尚未設定個人資料</p>
+                            <p>請點擊下方按鈕開始設定</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('[設定] 載入個人資料失敗:', error);
+            }
+        }
+
+        // 顯示個人資料
+        function displayProfile(data) {
+            const genderMap = { true: '男性', false: '女性' };
+            const goalMap = { 0: '維持體重', 1: '減重', 2: '增重' };
+            const activityMap = {
+                'sedentary': '久坐',
+                'lightly_active': '輕度活動',
+                'moderately_active': '中度活動',
+                'very_active': '高度活動',
+                'extra_active': '極高活動'
+            };
+
+            const bmi = data.weight && data.height ? (data.weight / Math.pow(data.height / 100, 2)).toFixed(1) : '-';
+
+            // 根據單位設定轉換數值
+            const isImperial = appSettings.unit === 'imperial';
+            const heightDisplay = data.height ? (isImperial ? convertUnit(data.height, 'height', true) : data.height) : '-';
+            const weightDisplay = data.weight ? (isImperial ? convertUnit(data.weight, 'weight', true) : data.weight) : '-';
+            const heightUnit = isImperial ? '' : 'cm';
+            const weightUnit = isImperial ? 'lb' : 'kg';
+
+            const profileHTML = `
+                <div class="profile-item">
+                    <div class="profile-item-label">年齡</div>
+                    <div class="profile-item-value">${data.age || '-'}<span class="profile-item-unit">歲</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">性別</div>
+                    <div class="profile-item-value">${genderMap[data.gender] || '-'}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">身高</div>
+                    <div class="profile-item-value">${heightDisplay}<span class="profile-item-unit">${heightUnit}</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">體重</div>
+                    <div class="profile-item-value">${weightDisplay}<span class="profile-item-unit">${weightUnit}</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">BMI</div>
+                    <div class="profile-item-value">${bmi}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">健康目標</div>
+                    <div class="profile-item-value">${goalMap[data.goal] || '-'}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">活動量</div>
+                    <div class="profile-item-value">${activityMap[data.activityLevel] || '-'}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">基礎代謝率 (BMR)</div>
+                    <div class="profile-item-value">${data.BMR || '-'}<span class="profile-item-unit">kcal</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">每日總消耗 (TDEE)</div>
+                    <div class="profile-item-value">${data.TDEE_level || '-'}<span class="profile-item-unit">kcal</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">建議熱量</div>
+                    <div class="profile-item-value">${data.suggested_calories || '-'}<span class="profile-item-unit">kcal</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">目標蛋白質</div>
+                    <div class="profile-item-value">${data.targetProtein || '-'}<span class="profile-item-unit">g</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">目標碳水化合物</div>
+                    <div class="profile-item-value">${data.targetCarbs || '-'}<span class="profile-item-unit">g</span></div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-item-label">目標脂肪</div>
+                    <div class="profile-item-value">${data.targetFat || '-'}<span class="profile-item-unit">g</span></div>
+                </div>
+            `;
+
+            document.getElementById('profileGrid').innerHTML = profileHTML;
+
+            // 填充編輯表單
+            if (data.age) document.getElementById('editAge').value = data.age;
+            if (data.gender !== undefined) document.getElementById('editGender').value = data.gender;
+            if (data.height) document.getElementById('editHeight').value = data.height;
+            if (data.weight) document.getElementById('editWeight').value = data.weight;
+            if (data.goal !== undefined) document.getElementById('editGoal').value = data.goal;
+            if (data.activityLevel) document.getElementById('editActivityLevel').value = data.activityLevel;
+        }
+
+        // 切換編輯表單
+        function toggleEditForm() {
+            const form = document.getElementById('editForm');
+            form.classList.toggle('active');
+        }
+
+        // 計算 BMR
+        function calculateBMR(age, height, weight, isMale) {
+            if (isMale) {
+                return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+        }
+
+        // 計算 TDEE
+        function calculateTDEE(bmr, activityLevel) {
+            const multipliers = {
+                'sedentary': 1.2,
+                'lightly_active': 1.375,
+                'moderately_active': 1.55,
+                'very_active': 1.725,
+                'extra_active': 1.9
+            };
+            return bmr * (multipliers[activityLevel] || 1.55);
+        }
+
+        // 計算建議熱量
+        function calculateSuggestedCalories(tdee, goal) {
+            let suggested;
+            switch (parseInt(goal)) {
+                case 1: // 減重
+                    suggested = tdee - 500;
+                    break;
+                case 2: // 增重
+                    suggested = tdee + 500;
+                    break;
+                default: // 維持
+                    suggested = tdee;
+            }
+            return Math.max(suggested, 1200); // 最低 1200 kcal
+        }
+
+        // 儲存個人資料
+        async function saveProfile() {
+            try {
+                const age = parseInt(document.getElementById('editAge').value);
+                const gender = document.getElementById('editGender').value === 'true';
+                const height = parseFloat(document.getElementById('editHeight').value);
+                const weight = parseFloat(document.getElementById('editWeight').value);
+                const goal = parseInt(document.getElementById('editGoal').value);
+                const activityLevel = document.getElementById('editActivityLevel').value;
+
+                if (!age || !height || !weight) {
+                    alert('請填寫所有必填欄位');
+                    return;
+                }
+
+                // 計算營養數據
+                const bmr = Math.round(calculateBMR(age, height, weight, gender));
+                const tdee = Math.round(calculateTDEE(bmr, activityLevel));
+                const suggestedCalories = Math.round(calculateSuggestedCalories(tdee, goal));
+
+                // 計算營養目標
+                const targetProtein = Math.round((suggestedCalories * 0.3) / 4);
+                const targetCarbs = Math.round((suggestedCalories * 0.45) / 4);
+                const targetFat = Math.round((suggestedCalories * 0.25) / 9);
+
+                // 更新 Firestore
+                await db.collection('member').doc(currentUser.uid).set({
+                    age: age,
+                    gender: gender,
+                    height: height,
+                    weight: weight,
+                    goal: goal,
+                    activityLevel: activityLevel,
+                    BMR: bmr,
+                    TDEE_level: tdee,
+                    suggested_calories: suggestedCalories,
+                    targetCalories: suggestedCalories,
+                    targetProtein: targetProtein,
+                    targetCarbs: targetCarbs,
+                    targetFat: targetFat,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                alert('個人資料更新成功！');
+                toggleEditForm();
+                await loadProfile();
+
+            } catch (error) {
+                console.error('[設定] 儲存失敗:', error);
+                alert('儲存失敗: ' + error.message);
+            }
+        }
+
+        // 載入統計資料
+        async function loadStatistics() {
+            try {
+                const idToken = await currentUser.getIdToken();
+
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/statistics?days=365', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('totalRecords').textContent = data.summary.total_records;
+                    document.getElementById('daysWithRecords').textContent = data.summary.days_with_records;
+                    document.getElementById('totalCalories').textContent = Math.round(data.summary.total_calories).toLocaleString();
+                }
+            } catch (error) {
+                console.error('[設定] 載入統計失敗:', error);
+            }
+        }
+
+        // 匯出資料
+        async function exportData() {
+            try {
+                const idToken = await currentUser.getIdToken();
+
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records?limit=10000', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const jsonStr = JSON.stringify(data.data, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `nutrition_records_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    alert(`成功匯出 ${data.data.length} 筆記錄！`);
+                } else {
+                    alert('沒有資料可匯出');
+                }
+            } catch (error) {
+                console.error('[設定] 匯出失敗:', error);
+                alert('匯出失敗: ' + error.message);
+            }
+        }
+
+        // 顯示清空確認對話框
+        function showClearAllModal() {
+            document.getElementById('clearAllModal').classList.add('active');
+        }
+
+        // 隱藏清空確認對話框
+        function hideClearAllModal() {
+            document.getElementById('clearAllModal').classList.remove('active');
+        }
+
+        // 清空所有記錄
+        async function clearAllRecords() {
+            try {
+                const idToken = await currentUser.getIdToken();
+
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records/clear-all', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`成功刪除 ${data.deleted_count} 筆記錄！`);
+                    hideClearAllModal();
+                    await loadStatistics();
+                } else {
+                    alert('刪除失敗: ' + (data.error || 'Unknown'));
+                }
+            } catch (error) {
+                console.error('[設定] 清空失敗:', error);
+                alert('清空失敗: ' + error.message);
+            }
+        }
+
+        // 登出
+        async function logout() {
+            try {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('[設定] 登出失敗:', error);
+                alert('登出失敗: ' + error.message);
+            }
+        }
+
+        // 上傳大頭貼
+        async function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 驗證檔案類型
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案！');
+                return;
+            }
+
+            // 驗證檔案大小 (限制 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('圖片大小不可超過 5MB！');
+                return;
+            }
+
+            try {
+                // 顯示上傳中的提示
+                const overlay = document.querySelector('.avatar-upload-overlay span');
+                const originalText = overlay.innerHTML;
+                overlay.innerHTML = '⏳<br>上傳中...';
+
+                // ✅ 使用與 Flutter 一致的路徑：user-profiles/{uid}/profile-photo.jpg
+                const storageRef = storage.ref();
+                const avatarRef = storageRef.child(`user-profiles/${currentUser.uid}/profile-photo.jpg`);
+
+                // 設定 metadata
+                const metadata = {
+                    contentType: file.type,
+                    customMetadata: {
+                        uploadedBy: currentUser.uid,
+                        uploadedAt: new Date().toISOString(),
+                        uploadSource: 'web'
+                    }
+                };
+
+                // 上傳檔案
+                const snapshot = await avatarRef.put(file, metadata);
+                console.log('[頭像] 上傳成功:', snapshot);
+
+                // 取得下載 URL
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                console.log('[頭像] 下載 URL:', downloadURL);
+
+                // ✅ 更新 Firestore member 資料（與 Flutter 一致）
+                await db.collection('member').doc(currentUser.uid).set({
+                    profilePhotoUrl: downloadURL,
+                    hasProfilePhoto: true,
+                    photoURL: downloadURL,  // 同時更新這個欄位以便向後相容
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // ✅ 同時更新 Firebase Auth 個人資料
+                await currentUser.updateProfile({
+                    photoURL: downloadURL
+                });
+
+                // 更新頁面顯示
+                document.getElementById('userAvatarLarge').src = downloadURL;
+
+                // 恢復原始文字
+                overlay.innerHTML = originalText;
+
+                alert('大頭貼更新成功！');
+
+                // 重新載入用戶資訊以確保同步
+                await currentUser.reload();
+
+            } catch (error) {
+                console.error('[頭像] 上傳失敗:', error);
+                alert('上傳失敗: ' + error.message);
+
+                // 恢復原始文字
+                const overlay = document.querySelector('.avatar-upload-overlay span');
+                overlay.innerHTML = '📷<br>更換頭像';
+            }
+        }
+
+        // ===== 應用程式設定功能 =====
+
+        // 設定存儲鍵
+        const SETTINGS_KEY = 'bentoai_settings';
+        let appSettings = {
+            mealReminder: false,
+            goalNotification: false,
+            darkMode: false,
+            unit: 'metric'
+        };
+        let feedbackType = 'suggestion';
+
+        // 載入應用程式設定
+        function loadAppSettings() {
+            const saved = localStorage.getItem(SETTINGS_KEY);
+            if (saved) {
+                appSettings = JSON.parse(saved);
+            }
+
+            // 更新 UI
+            updateToggle('mealReminderToggle', appSettings.mealReminder);
+            updateToggle('goalNotificationToggle', appSettings.goalNotification);
+            updateToggle('darkModeToggle', appSettings.darkMode);
+            document.getElementById('unitSelect').value = appSettings.unit;
+
+            // 套用深色模式
+            if (appSettings.darkMode) {
+                document.body.classList.add('dark-mode');
+            }
+
+            // 如果用餐提醒已開啟，啟動提醒檢查
+            if (appSettings.mealReminder) {
+                startMealReminder();
+            }
+        }
+
+        // 更新開關狀態
+        function updateToggle(id, isActive) {
+            const toggle = document.getElementById(id);
+            if (toggle) {
+                if (isActive) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+        }
+
+        // 儲存設定
+        function saveAppSettings() {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
+        }
+
+        // 用餐提醒時間設定 (24小時制)
+        const MEAL_TIMES = {
+            breakfast: { hour: 8, minute: 0, name: '早餐' },
+            lunch: { hour: 12, minute: 0, name: '午餐' },
+            dinner: { hour: 18, minute: 30, name: '晚餐' }
+        };
+
+        let mealReminderInterval = null;
+
+        // 切換用餐提醒
+        async function toggleMealReminder() {
+            appSettings.mealReminder = !appSettings.mealReminder;
+            updateToggle('mealReminderToggle', appSettings.mealReminder);
+            saveAppSettings();
+
+            if (appSettings.mealReminder) {
+                const permission = await requestNotificationPermission();
+                if (permission === 'granted') {
+                    startMealReminder();
+                    showToast('用餐提醒已開啟！將在 8:00、12:00、18:30 提醒您');
+                } else {
+                    appSettings.mealReminder = false;
+                    updateToggle('mealReminderToggle', false);
+                    saveAppSettings();
+                    showToast('請允許通知權限以開啟提醒');
+                }
+            } else {
+                stopMealReminder();
+                showToast('用餐提醒已關閉');
+            }
+        }
+
+        // 開始用餐提醒
+        function startMealReminder() {
+            // 每分鐘檢查一次是否到用餐時間
+            mealReminderInterval = setInterval(checkMealTime, 60000);
+            // 立即檢查一次
+            checkMealTime();
+            console.log('用餐提醒已啟動');
+        }
+
+        // 停止用餐提醒
+        function stopMealReminder() {
+            if (mealReminderInterval) {
+                clearInterval(mealReminderInterval);
+                mealReminderInterval = null;
+            }
+            console.log('用餐提醒已停止');
+        }
+
+        // 檢查是否到用餐時間
+        function checkMealTime() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            for (const [meal, time] of Object.entries(MEAL_TIMES)) {
+                if (currentHour === time.hour && currentMinute === time.minute) {
+                    // 檢查今天是否已經提醒過這餐
+                    const lastReminder = localStorage.getItem(`lastReminder_${meal}`);
+                    const today = now.toDateString();
+
+                    if (lastReminder !== today) {
+                        sendMealNotification(time.name);
+                        localStorage.setItem(`lastReminder_${meal}`, today);
+                    }
+                }
+            }
+        }
+
+        // 發送用餐通知
+        function sendMealNotification(mealName) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification('健康數據助理 用餐提醒', {
+                    body: `現在是${mealName}時間！別忘了記錄您的飲食 📸`,
+                    icon: 'logo.png',
+                    badge: 'logo.png',
+                    tag: 'meal-reminder',
+                    requireInteraction: true
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    window.location.href = 'index.html';
+                    notification.close();
+                };
+            }
+        }
+
+        // 切換目標達成通知
+        async function toggleGoalNotification() {
+            appSettings.goalNotification = !appSettings.goalNotification;
+            updateToggle('goalNotificationToggle', appSettings.goalNotification);
+            saveAppSettings();
+
+            if (appSettings.goalNotification) {
+                const permission = await requestNotificationPermission();
+                if (permission === 'granted') {
+                    showToast('目標達成通知已開啟！');
+                } else {
+                    appSettings.goalNotification = false;
+                    updateToggle('goalNotificationToggle', false);
+                    saveAppSettings();
+                    showToast('請允許通知權限以開啟通知');
+                }
+            } else {
+                showToast('目標達成通知已關閉');
+            }
+        }
+
+        // 顯示 Toast 訊息
+        function showToast(message) {
+            // 移除舊的 toast
+            const oldToast = document.querySelector('.toast-message');
+            if (oldToast) oldToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 9999;
+                animation: fadeInOut 3s ease;
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Toast 動畫 CSS
+        const toastStyle = document.createElement('style');
+        toastStyle.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(toastStyle);
+
+        // 切換深色模式
+        function toggleDarkMode() {
+            appSettings.darkMode = !appSettings.darkMode;
+            updateToggle('darkModeToggle', appSettings.darkMode);
+            saveAppSettings();
+
+            if (appSettings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // 更改單位
+        function changeUnit() {
+            appSettings.unit = document.getElementById('unitSelect').value;
+            saveAppSettings();
+
+            // 重新顯示個人資料（套用新單位）
+            if (profileData) {
+                displayProfile(profileData);
+            }
+            showToast(`已切換至${appSettings.unit === 'metric' ? '公制 (cm/kg)' : '英制 (ft/lb)'}`);
+        }
+
+        // 請求通知權限
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                console.log('通知權限:', permission);
+                return permission;
+            }
+            return 'denied';
+        }
+
+        // 單位轉換函數
+        function convertUnit(value, type, toImperial) {
+            if (toImperial) {
+                // 公制轉英制
+                if (type === 'height') {
+                    // cm to feet and inches
+                    const totalInches = value / 2.54;
+                    const feet = Math.floor(totalInches / 12);
+                    const inches = Math.round(totalInches % 12);
+                    return `${feet}'${inches}"`;
+                } else if (type === 'weight') {
+                    // kg to lb
+                    return (value * 2.205).toFixed(1);
+                }
+            } else {
+                // 英制轉公制 (保持原值)
+                return value;
+            }
+            return value;
+        }
+
+        // 取得單位標籤
+        function getUnitLabel(type) {
+            const isImperial = appSettings.unit === 'imperial';
+            if (type === 'height') {
+                return isImperial ? '' : 'cm';
+            } else if (type === 'weight') {
+                return isImperial ? 'lb' : 'kg';
+            }
+            return '';
+        }
+
+        // ===== Modal 功能 =====
+
+        // 顯示關於 Modal
+        function showAboutModal() {
+            document.getElementById('aboutModal').classList.add('active');
+        }
+
+        // 隱藏關於 Modal
+        function hideAboutModal() {
+            document.getElementById('aboutModal').classList.remove('active');
+        }
+
+        // 顯示意見回饋 Modal
+        function showFeedbackModal() {
+            document.getElementById('feedbackModal').classList.add('active');
+        }
+
+        // 隱藏意見回饋 Modal
+        function hideFeedbackModal() {
+            document.getElementById('feedbackModal').classList.remove('active');
+            document.getElementById('feedbackContent').value = '';
+        }
+
+        // 選擇回饋類型
+        function selectFeedbackType(btn, type) {
+            feedbackType = type;
+            document.querySelectorAll('.feedback-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 提交意見回饋
+        async function submitFeedback() {
+            const content = document.getElementById('feedbackContent').value.trim();
+
+            if (!content) {
+                alert('請輸入您的意見或建議');
+                return;
+            }
+
+            try {
+                // 儲存到 Firestore
+                await db.collection('feedback').add({
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    type: feedbackType,
+                    content: content,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending'
+                });
+
+                alert('感謝您的回饋！我們會認真閱讀每一條建議。');
+                hideFeedbackModal();
+            } catch (error) {
+                console.error('提交回饋失敗:', error);
+                alert('提交失敗，請稍後再試');
+            }
+        }
+
+        // 點擊 Modal 外部關閉
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

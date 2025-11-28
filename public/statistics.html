@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飲食統計分析 - 營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 頁面標題 */
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .time-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .time-btn:hover, .time-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* 用戶資訊 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #667eea;
+        }
+
+        /* 載入中 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .loading p {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        /* 總體統計卡片 */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        /* 圖表區域 */
+        .charts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-container h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 300px;
+            width: 100%;
+        }
+
+        .chart-note {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .empty-state h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* 響應式設計 - 平板 */
+        @media (max-width: 1200px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                min-height: 400px;
+            }
+        }
+
+        /* 響應式設計 - 手機 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .time-selector {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .time-btn {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+
+            .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.85em;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-icon {
+                font-size: 2em;
+            }
+
+            .stat-value {
+                font-size: 1.8em;
+            }
+
+            .stat-label {
+                font-size: 0.9em;
+            }
+
+            .charts-grid {
+                gap: 20px;
+            }
+
+            .chart-container {
+                padding: 15px;
+                min-height: 350px;
+            }
+
+            .chart-container h2 {
+                font-size: 1.2em;
+            }
+
+            .chart-wrapper {
+                min-height: 250px;
+            }
+        }
+
+        /* 響應式設計 - 小手機 */
+        @media (max-width: 480px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
+            }
+
+            .chart-container {
+                min-height: 320px;
+            }
+
+            .chart-wrapper {
+                min-height: 220px;
+            }
+        }
+
+        /* ===== 底部導航欄 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        /* 為底部導航留出空間 */
+        body {
+            padding-bottom: 80px;
+        }
+
+        /* 手機版底部導航優化 */
+        @media (max-width: 480px) {
+            .nav-item-stat {
+                font-size: 10px;
+                padding: 5px 5px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .bottom-nav {
+                padding: 5px 0;
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .header {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .header h1 {
+            color: #667eea;
+        }
+
+        body.dark-mode .header p {
+            color: #888 !important;
+        }
+
+        body.dark-mode .time-btn {
+            background: #2a2a2a;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        body.dark-mode .time-btn:hover,
+        body.dark-mode .time-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #444;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #555;
+        }
+
+        body.dark-mode .stat-card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .stat-value {
+            color: #667eea;
+        }
+
+        body.dark-mode .stat-label {
+            color: #aaa;
+        }
+
+        body.dark-mode .chart-container {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .chart-container h2 {
+            color: #667eea;
+        }
+
+        body.dark-mode .chart-note {
+            color: #888;
+        }
+
+        body.dark-mode .chart-note p {
+            color: #888;
+        }
+
+        body.dark-mode .loading {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .loading p {
+            color: #667eea;
+        }
+
+        body.dark-mode .empty-state {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .empty-state h2 {
+            color: #667eea;
+        }
+
+        body.dark-mode .empty-state p {
+            color: #888;
+        }
+
+        body.dark-mode #userName {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .nav-item {
+            color: #888;
+        }
+
+        body.dark-mode .nav-item:hover,
+        body.dark-mode .nav-item.active {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頁面標題 -->
+        <div class="header">
+            <div>
+                <h1><img src="logo.png" alt="Logo" class="header-logo">飲食統計分析</h1>
+                <p style="color: #666; margin-top: 10px;">追蹤您的飲食習慣，邁向健康生活</p>
+            </div>
+            <div class="controls">
+                <div class="time-selector">
+                    <button class="time-btn" data-days="7">7 天</button>
+                    <button class="time-btn active" data-days="30">30 天</button>
+                    <button class="time-btn" data-days="90">90 天</button>
+                </div>
+                <div class="user-info">
+                    <img id="userAvatar" class="user-avatar" style="display: none;">
+                    <span id="userName"></span>
+                    <button class="btn btn-primary" onclick="fixNutritionData()">🔧 修復資料</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='diet_records.html'">飲食記錄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 載入中 -->
+        <div id="loading" class="loading">
+            <p>⏳ 載入統計資料中...</p>
+        </div>
+
+        <!-- 空狀態 -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h2>尚無統計資料</h2>
+            <p>開始記錄您的飲食，即可查看詳細統計分析！</p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                📸 開始記錄
+            </button>
+        </div>
+
+        <!-- 總體統計 -->
+        <div id="summarySection" style="display: none;">
+            <div class="summary-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="avgCalories">0</div>
+                    <div class="stat-label">平均每日熱量 (大卡)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-value" id="avgMeals">0</div>
+                    <div class="stat-label">平均每日餐次</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="totalDays">0</div>
+                    <div class="stat-label">有記錄的天數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🥗</div>
+                    <div class="stat-value" id="uniqueFoods">0</div>
+                    <div class="stat-label">不同食物種類</div>
+                </div>
+            </div>
+
+            <!-- 圖表區域 -->
+            <div class="charts-grid">
+                <!-- 每日熱量趨勢 (全寬) -->
+                <div class="chart-container">
+                    <h2>📈 每日熱量趨勢</h2>
+                    <div class="chart-wrapper">
+                        <div id="caloriesTrendChart"></div>
+                    </div>
+                </div>
+
+                <!-- 第一排：營養素占比 + 食物頻率 -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h2>🥙 三大營養素熱量占比</h2>
+                        <div class="chart-wrapper">
+                            <div id="nutrientPieChart"></div>
+                        </div>
+                        <div class="chart-note">
+                            <p>建議比例：蛋白質 15-20%，脂肪 20-30%，碳水 50-60%</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h2>🏆 最常食用的食物</h2>
+                        <div class="chart-wrapper">
+                            <div id="foodFrequencyChart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 三大營養素攝取量趨勢 (全寬) -->
+                <div class="chart-container">
+                    <h2>📊 三大營養素攝取趨勢</h2>
+                    <div class="chart-wrapper">
+                        <div id="macrosTrendChart"></div>
+                    </div>
+                </div>
+
+                <!-- 第二排：纖維 + 鈉 -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h2>🌾 膳食纖維攝取</h2>
+                        <div class="chart-wrapper">
+                            <div id="fiberChart"></div>
+                        </div>
+                        <div class="chart-note">
+                            <p>建議攝取量：25-35 克/天</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h2>🧂 鈉攝取監控</h2>
+                        <div class="chart-wrapper">
+                            <div id="sodiumChart"></div>
+                        </div>
+                        <div class="chart-note">
+                            <p>建議攝取量：&lt;2300 毫克/天</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部導航欄 -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <span class="nav-label">首頁</span>
+        </a>
+        <a href="diet_records.html" class="nav-item">
+            <div class="nav-icon">🍽️</div>
+            <span class="nav-label">記錄</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">📷</div>
+            <span class="nav-label">辨識</span>
+        </a>
+        <a href="statistics.html" class="nav-item active">
+            <div class="nav-icon">📊</div>
+            <span class="nav-label">統計</span>
+        </a>
+        <a href="chat.html" class="nav-item">
+            <div class="nav-icon">💬</div>
+            <span class="nav-label">諮詢</span>
+        </a>
+        <a href="exercise.html" class="nav-item">
+            <div class="nav-icon">🏃</div>
+            <span class="nav-label">運動</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <span class="nav-label">設定</span>
+        </a>
+    </nav>
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        let hasCheckedAuth = false;
+        let currentDays = 30;
+
+        // 修復營養資料
+        async function fixNutritionData() {
+            if (!currentUser) {
+                alert('請先登入');
+                return;
+            }
+
+            if (!confirm('這將會修復所有缺少營養資料的記錄。是否繼續？')) {
+                return;
+            }
+
+            try {
+                console.log('[修復] 開始修復營養資料...');
+                const idToken = await currentUser.getIdToken();
+
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/fix-nutrition-data', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('[修復] 修復結果:', data);
+
+                if (data.success) {
+                    // 如果無需修復（修復數量為 0），清空快取並強制重新整理
+                    if (data.fixed_count === 0) {
+                        alert(`無需修復！\n所有資料皆正常\n\n將清空快取並強制重新整理頁面...`);
+
+                        // 清空快取
+                        if ('caches' in window) {
+                            caches.keys().then(names => {
+                                names.forEach(name => caches.delete(name));
+                            });
+                        }
+
+                        // 強制重新整理（相當於 Ctrl+Shift+R）
+                        setTimeout(() => {
+                            window.location.reload(true);
+                        }, 1000);
+                    } else {
+                        // 有修復資料，顯示結果並重新載入
+                        alert(`修復完成！\n成功: ${data.fixed_count} 筆\n失敗: ${data.error_count} 筆\n跳過: ${data.skipped_count} 筆`);
+
+                        // 重新載入統計資料
+                        await loadStatistics(currentDays);
+                    }
+                } else {
+                    alert('修復失敗: ' + (data.error || 'Unknown error'));
+                }
+
+            } catch (error) {
+                console.error('[修復] 錯誤:', error);
+                alert('修復失敗: ' + error.message);
+            }
+        }
+
+        // 監聽登入狀態
+        auth.onAuthStateChanged(async (user) => {
+            if (hasCheckedAuth) return;
+            hasCheckedAuth = true;
+
+            if (user) {
+                console.log('[統計] 用戶已登入:', user.email);
+                currentUser = user;
+
+                // 更新用戶資訊
+                document.getElementById('userName').textContent = user.displayName || user.email;
+                if (user.photoURL) {
+                    const avatar = document.getElementById('userAvatar');
+                    avatar.src = user.photoURL;
+                    avatar.style.display = 'block';
+                }
+
+                // 載入統計資料
+                await loadStatistics(currentDays);
+            } else {
+                console.log('[統計] 未登入，導向登入頁');
+                alert('請先登入');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // 時間選擇器
+        document.querySelectorAll('.time-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                currentDays = parseInt(this.dataset.days);
+                await loadStatistics(currentDays);
+            });
+        });
+
+        // 載入統計資料
+        async function loadStatistics(days = 30) {
+            console.log(`[統計] 載入最近 ${days} 天的統計資料`);
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('summarySection').style.display = 'none';
+
+            try {
+                const idToken = await currentUser.getIdToken();
+
+                // 添加時間戳避免瀏覽器快取，確保每次 F5 刷新都能獲取最新數據
+                const timestamp = new Date().getTime();
+                const response = await fetch(`https://bentoai-api-30594327640.asia-east1.run.app/api/statistics?days=${days}&t=${timestamp}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('[統計] 統計資料:', data);
+                console.log('[統計] Summary:', data.summary);
+                console.log('[統計] Daily Trend 筆數:', data.daily_trend ? data.daily_trend.length : 0);
+                console.log('[統計] Daily Trend 範例 (前5筆):', data.daily_trend ? data.daily_trend.slice(0, 5) : []);
+                console.log('[統計] Top Foods:', data.top_foods);
+                console.log('[統計] Nutrient Distribution:', data.nutrient_distribution);
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success || data.summary.total_records === 0) {
+                    console.log('[統計] 無記錄或查詢失敗');
+                    document.getElementById('emptyState').style.display = 'block';
+                    return;
+                }
+
+                // 顯示統計資料
+                displayStatistics(data);
+
+            } catch (error) {
+                console.error('[統計] 載入失敗:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('載入統計資料失敗: ' + error.message);
+            }
+        }
+
+        // 顯示統計資料
+        function displayStatistics(data) {
+            document.getElementById('summarySection').style.display = 'block';
+
+            // 更新總體統計
+            document.getElementById('avgCalories').textContent = data.summary.avg_calories_per_day.toLocaleString();
+            document.getElementById('avgMeals').textContent = data.summary.avg_meals_per_day.toFixed(1);
+            document.getElementById('totalDays').textContent = data.summary.days_with_records;
+            document.getElementById('uniqueFoods').textContent = data.summary.unique_foods;
+
+            // 繪製圖表
+            drawCaloriesTrendChart(data.daily_trend);
+            drawNutrientPieChart(data.nutrient_distribution);
+            drawFoodFrequencyChart(data.top_foods);
+            drawMacrosTrendChart(data.daily_trend);
+            drawFiberChart(data.daily_trend);
+            drawSodiumChart(data.daily_trend);
+
+            // 監聽窗口調整，重新繪製圖表
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // 重新調整所有圖表大小
+                    const chartIds = ['caloriesTrendChart', 'nutrientPieChart', 'foodFrequencyChart',
+                                     'macrosTrendChart', 'fiberChart', 'sodiumChart'];
+                    chartIds.forEach(id => {
+                        const chartDiv = document.getElementById(id);
+                        if (chartDiv) {
+                            Plotly.Plots.resize(chartDiv);
+                        }
+                    });
+                }, 250);
+            });
+        }
+
+        // 1. 每日熱量趨勢圖（折線圖）
+        function drawCaloriesTrendChart(dailyTrend) {
+            console.log('[圖表] 繪製每日熱量趨勢圖');
+            console.log('[圖表] dailyTrend 資料筆數:', dailyTrend.length);
+            console.log('[圖表] dailyTrend 最後5筆:', dailyTrend.slice(-5));
+
+            const dates = dailyTrend.map(d => d.date);
+            const caloriesData = dailyTrend.map(d => Number(d.calories) || 0);
+            const mealsData = dailyTrend.map(d => Number(d.meals) || 0);
+
+            console.log('[圖表] 熱量數據 (最後10天):', caloriesData.slice(-10));
+            console.log('[圖表] 餐次數據 (最後10天):', mealsData.slice(-10));
+            console.log('[圖表] 日期 (最後10天):', dates.slice(-10));
+
+            const trace1 = {
+                x: dates,
+                y: caloriesData,
+                name: '熱量 (大卡)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: 'rgb(102, 126, 234)',
+                    width: 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: 'rgb(102, 126, 234)',
+                    size: 6
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(102, 126, 234, 0.1)',
+                yaxis: 'y1'
+            };
+
+            const trace2 = {
+                x: dates,
+                y: mealsData,
+                name: '餐次',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: 'rgb(255, 159, 64)',
+                    width: 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: 'rgb(255, 159, 64)',
+                    size: 6
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(255, 159, 64, 0.1)',
+                yaxis: 'y2'
+            };
+
+            const layout = {
+                autosize: true,
+                title: false,
+                xaxis: {
+                    title: '日期',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5',
+                    type: 'date',
+                    range: [dates[0], dates[dates.length - 1]],
+                    tickmode: 'auto',
+                    nticks: window.innerWidth < 768 ? 7 : 15,
+                    tickangle: window.innerWidth < 768 ? -45 : 0
+                },
+                yaxis: {
+                    title: window.innerWidth < 768 ? '熱量' : '熱量 (大卡)',
+                    side: 'left',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5'
+                },
+                yaxis2: {
+                    title: '餐次',
+                    side: 'right',
+                    overlaying: 'y',
+                    showgrid: false
+                },
+                hovermode: 'x unified',
+                legend: {
+                    orientation: 'h',
+                    y: 1.15,
+                    x: 0.5,
+                    xanchor: 'center'
+                },
+                margin: { t: 40, r: 50, l: 50, b: window.innerWidth < 768 ? 70 : 50 }
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: window.innerWidth > 768,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('caloriesTrendChart', [trace1, trace2], layout, config);
+
+            // 驗證圖表實際繪製的數據
+            setTimeout(() => {
+                const chartDiv = document.getElementById('caloriesTrendChart');
+                if (chartDiv && chartDiv.data) {
+                    console.log('[圖表驗證] 實際繪製的最後5個熱量值:', chartDiv.data[0].y.slice(-5));
+                    console.log('[圖表驗證] 實際繪製的最後5個日期:', chartDiv.data[0].x.slice(-5));
+                }
+            }, 100);
+        }
+
+        // 2. 營養素分布圓餅圖
+        function drawNutrientPieChart(nutrientDist) {
+            const isMobile = window.innerWidth < 768;
+
+            const data = [{
+                values: [
+                    nutrientDist.protein,
+                    nutrientDist.fat,
+                    nutrientDist.carbs
+                ],
+                labels: isMobile ? [
+                    `蛋白質`,
+                    `脂肪`,
+                    `碳水`
+                ] : [
+                    `蛋白質 (${nutrientDist.protein_percent}%)`,
+                    `脂肪 (${nutrientDist.fat_percent}%)`,
+                    `碳水化合物 (${nutrientDist.carbs_percent}%)`
+                ],
+                type: 'pie',
+                hole: 0.4,
+                marker: {
+                    colors: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ],
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
+                },
+                textinfo: isMobile ? 'percent' : 'label+percent',
+                textposition: isMobile ? 'inside' : 'outside',
+                textfont: {
+                    size: isMobile ? 10 : 12
+                },
+                hovertemplate: '%{label}<br>%{value}g<br>%{percent}<extra></extra>'
+            }];
+
+            const layout = {
+                autosize: true,
+                title: false,
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    y: isMobile ? -0.2 : -0.1,
+                    x: 0.5,
+                    xanchor: 'center',
+                    font: { size: isMobile ? 10 : 12 }
+                },
+                margin: { t: 20, r: 20, l: 20, b: isMobile ? 60 : 80 }
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: false
+            };
+
+            Plotly.newPlot('nutrientPieChart', data, layout, config);
+        }
+
+        // 3. 食物頻率長條圖
+        function drawFoodFrequencyChart(topFoods) {
+            const isMobile = window.innerWidth < 768;
+
+            // 手機版只顯示前5個，桌面版顯示全部
+            const displayFoods = isMobile ? topFoods.slice(0, 5) : topFoods;
+            const labels = displayFoods.map(f => {
+                // 手機版截短名稱
+                if (isMobile && f.name.length > 8) {
+                    return f.name.substring(0, 8) + '...';
+                }
+                return f.name;
+            });
+            const counts = displayFoods.map(f => f.count);
+
+            const data = [{
+                y: labels,
+                x: counts,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgba(118, 75, 162, 0.8)',
+                    line: {
+                        color: 'rgb(118, 75, 162)',
+                        width: 2
+                    }
+                },
+                text: counts.map(c => `${c}次`),
+                textposition: 'outside',
+                textfont: { size: isMobile ? 10 : 12 },
+                hovertemplate: '%{y}<br>食用次數: %{x} 次<extra></extra>'
+            }];
+
+            const layout = {
+                autosize: true,
+                title: false,
+                xaxis: {
+                    title: isMobile ? '' : '次數',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5'
+                },
+                yaxis: {
+                    title: '',
+                    automargin: true,
+                    tickfont: { size: isMobile ? 10 : 12 }
+                },
+                margin: { t: 20, r: isMobile ? 50 : 80, l: isMobile ? 80 : 120, b: 40 }
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: false
+            };
+
+            Plotly.newPlot('foodFrequencyChart', data, layout, config);
+        }
+
+        // 4. 三大營養素攝取趨勢圖（多條折線圖）
+        function drawMacrosTrendChart(dailyTrend) {
+            console.log('[圖表] 繪製三大營養素趨勢圖');
+            const isMobile = window.innerWidth < 768;
+
+            const dates = dailyTrend.map(d => d.date);
+            const proteinData = dailyTrend.map(d => d.protein || 0);
+            const fatData = dailyTrend.map(d => d.fat || 0);
+            const carbsData = dailyTrend.map(d => d.carbs || 0);
+
+            const trace1 = {
+                x: dates,
+                y: proteinData,
+                name: isMobile ? '蛋白質' : '蛋白質 (g)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: 'rgb(255, 99, 132)',
+                    width: isMobile ? 2 : 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: 'rgb(255, 99, 132)',
+                    size: isMobile ? 4 : 6
+                }
+            };
+
+            const trace2 = {
+                x: dates,
+                y: fatData,
+                name: isMobile ? '脂肪' : '脂肪 (g)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: 'rgb(255, 206, 86)',
+                    width: isMobile ? 2 : 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: 'rgb(255, 206, 86)',
+                    size: isMobile ? 4 : 6
+                }
+            };
+
+            const trace3 = {
+                x: dates,
+                y: carbsData,
+                name: isMobile ? '碳水' : '碳水化合物 (g)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: 'rgb(54, 162, 235)',
+                    width: isMobile ? 2 : 3,
+                    shape: 'spline'
+                },
+                marker: {
+                    color: 'rgb(54, 162, 235)',
+                    size: isMobile ? 4 : 6
+                }
+            };
+
+            const layout = {
+                autosize: true,
+                title: false,
+                xaxis: {
+                    title: isMobile ? '' : '日期',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5',
+                    type: 'date',
+                    range: [dates[0], dates[dates.length - 1]],
+                    tickmode: 'auto',
+                    nticks: isMobile ? 7 : 15,
+                    tickangle: isMobile ? -45 : 0
+                },
+                yaxis: {
+                    title: isMobile ? '克' : '攝取量 (克)',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5',
+                    rangemode: 'tozero'
+                },
+                hovermode: 'x unified',
+                legend: {
+                    orientation: 'h',
+                    y: 1.15,
+                    x: 0.5,
+                    xanchor: 'center',
+                    font: { size: isMobile ? 10 : 12 }
+                },
+                margin: { t: 40, r: 30, l: 40, b: isMobile ? 70 : 50 }
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: !isMobile,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('macrosTrendChart', [trace1, trace2, trace3], layout, config);
+        }
+
+        // 5. 膳食纖維攝取圖（長條圖）
+        function drawFiberChart(dailyTrend) {
+            console.log('[圖表] 繪製纖維攝取圖');
+            const isMobile = window.innerWidth < 768;
+
+            const lastWeek = dailyTrend.slice(isMobile ? -5 : -7);
+            const dates = lastWeek.map(d => d.date);
+            const fiberData = lastWeek.map(d => d.fiber || 0);
+
+            // 判斷是否達標（25-35g）
+            const colors = fiberData.map(value => {
+                if (value >= 25 && value <= 35) return 'rgba(75, 192, 192, 0.8)';
+                else if (value < 25) return 'rgba(255, 159, 64, 0.8)';
+                else return 'rgba(255, 99, 132, 0.8)';
+            });
+
+            const data = [{
+                x: dates,
+                y: fiberData,
+                type: 'bar',
+                marker: {
+                    color: colors,
+                    line: { color: 'white', width: 2 }
+                },
+                text: fiberData.map(v => `${v.toFixed(1)}g`),
+                textposition: 'outside',
+                textfont: { size: isMobile ? 9 : 12 },
+                hovertemplate: '%{x}<br>纖維: %{y:.1f}g<extra></extra>'
+            }];
+
+            const layout = {
+                autosize: true,
+                title: false,
+                xaxis: {
+                    title: '',
+                    showgrid: false,
+                    tickangle: isMobile ? -45 : 0,
+                    tickfont: { size: isMobile ? 9 : 11 }
+                },
+                yaxis: {
+                    title: isMobile ? '克' : '纖維攝取 (克)',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5',
+                    range: [0, 40]
+                },
+                shapes: [
+                    {
+                        type: 'line', x0: dates[0], x1: dates[dates.length - 1],
+                        y0: 25, y1: 25,
+                        line: { color: 'rgb(75, 192, 192)', width: 2, dash: 'dash' }
+                    },
+                    {
+                        type: 'line', x0: dates[0], x1: dates[dates.length - 1],
+                        y0: 35, y1: 35,
+                        line: { color: 'rgb(75, 192, 192)', width: 2, dash: 'dash' }
+                    }
+                ],
+                annotations: isMobile ? [] : [
+                    {
+                        x: dates[dates.length - 1], y: 25, xanchor: 'left',
+                        text: '下限(25g)', showarrow: false, xshift: 5,
+                        font: { size: 9, color: 'rgb(75, 192, 192)' }
+                    },
+                    {
+                        x: dates[dates.length - 1], y: 35, xanchor: 'left',
+                        text: '上限(35g)', showarrow: false, xshift: 5,
+                        font: { size: 9, color: 'rgb(75, 192, 192)' }
+                    }
+                ],
+                margin: { t: 20, r: isMobile ? 20 : 80, l: isMobile ? 35 : 50, b: isMobile ? 60 : 50 }
+            };
+
+            const config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('fiberChart', data, layout, config);
+        }
+
+        // 6. 鈉攝取監控圖（長條圖）
+        function drawSodiumChart(dailyTrend) {
+            console.log('[圖表] 繪製鈉攝取圖');
+            const isMobile = window.innerWidth < 768;
+
+            const lastWeek = dailyTrend.slice(isMobile ? -5 : -7);
+            const dates = lastWeek.map(d => d.date);
+            const sodiumData = lastWeek.map(d => d.sodium || 0);
+
+            // 判斷是否超標（<2300mg）
+            const colors = sodiumData.map(value => {
+                if (value <= 2300) return 'rgba(75, 192, 192, 0.8)';
+                else if (value <= 3000) return 'rgba(255, 206, 86, 0.8)';
+                else return 'rgba(255, 99, 132, 0.8)';
+            });
+
+            const data = [{
+                x: dates,
+                y: sodiumData,
+                type: 'bar',
+                marker: {
+                    color: colors,
+                    line: { color: 'white', width: 2 }
+                },
+                text: sodiumData.map(v => `${v.toFixed(0)}mg`),
+                textposition: 'outside',
+                textfont: { size: isMobile ? 9 : 12 },
+                hovertemplate: '%{x}<br>鈉: %{y:.0f}mg<extra></extra>'
+            }];
+
+            const layout = {
+                autosize: true,
+                title: false,
+                xaxis: {
+                    title: '',
+                    showgrid: false,
+                    tickangle: isMobile ? -45 : 0,
+                    tickfont: { size: isMobile ? 9 : 11 }
+                },
+                yaxis: {
+                    title: isMobile ? 'mg' : '鈉攝取 (毫克)',
+                    showgrid: true,
+                    gridcolor: '#e5e5e5',
+                    range: [0, 4000]
+                },
+                shapes: [
+                    {
+                        type: 'line', x0: dates[0], x1: dates[dates.length - 1],
+                        y0: 2300, y1: 2300,
+                        line: { color: 'rgb(75, 192, 192)', width: 2, dash: 'dash' }
+                    }
+                ],
+                annotations: isMobile ? [] : [
+                    {
+                        x: dates[dates.length - 1], y: 2300, xanchor: 'left',
+                        text: '上限(2300mg)', showarrow: false, xshift: 5,
+                        font: { size: 9, color: 'rgb(75, 192, 192)' }
+                    }
+                ],
+                margin: { t: 20, r: isMobile ? 20 : 100, l: isMobile ? 40 : 50, b: isMobile ? 60 : 50 }
+            };
+
+            const config = { responsive: true, displayModeBar: false };
+            Plotly.newPlot('sodiumChart', data, layout, config);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安裝健康數據助理 - 加入主畫面</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .icon {
+            font-size: 28px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature {
+            background: #f8f9ff;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature .emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .feature h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .platform-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .platform-tab {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .platform-tab:hover {
+            border-color: #667eea;
+        }
+
+        .platform-tab.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .platform-tab .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .platform-tab .name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .instructions {
+            display: none;
+        }
+
+        .instructions.active {
+            display: block;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .step-content .highlight {
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .step-image {
+            margin-top: 15px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .step-image .placeholder {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .step-image p {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .install-btn {
+            display: none;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .install-btn.show {
+            display: block;
+        }
+
+        .already-installed {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: #e8f5e9;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .already-installed.show {
+            display: block;
+        }
+
+        .already-installed .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .already-installed h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .already-installed p {
+            color: #558b2f;
+        }
+
+        .tips {
+            background: #fff3cd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .tips h4 {
+            color: #856404;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips ul {
+            color: #856404;
+            font-size: 13px;
+            padding-left: 20px;
+        }
+
+        .tips li {
+            margin-bottom: 5px;
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .card h2 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .feature {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .feature h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .feature p {
+            color: #aaa;
+        }
+
+        body.dark-mode .platform-tab {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .platform-tab:hover {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .platform-tab.active {
+            color: white;
+        }
+
+        body.dark-mode .step {
+            border-bottom-color: #444;
+        }
+
+        body.dark-mode .step-content h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .step-content p {
+            color: #aaa;
+        }
+
+        body.dark-mode .step-content .highlight {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .step-image {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .tips {
+            background: #3d3520;
+        }
+
+        body.dark-mode .tips h4,
+        body.dark-mode .tips ul {
+            color: #d4a84b;
+        }
+
+        body.dark-mode .already-installed {
+            background: #1b3d1b;
+        }
+
+        body.dark-mode .already-installed h3 {
+            color: #81c784;
+        }
+
+        body.dark-mode .already-installed p {
+            color: #a5d6a7;
+        }
+
+        @media (max-width: 480px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-tabs {
+                flex-direction: column;
+            }
+
+            .back-btn {
+                position: static;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="welcome.html" class="back-btn">← 返回</a>
+
+        <div class="header">
+            <h1>📲 安裝健康數據助理</h1>
+            <p>將健康數據助理加入主畫面，獲得更好的使用體驗</p>
+        </div>
+
+        <!-- PWA 功能介紹 -->
+        <div class="card">
+            <h2><span class="icon">✨</span> 安裝後可享有</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="emoji">🚀</div>
+                    <h4>快速啟動</h4>
+                    <p>從主畫面直接開啟</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">📱</div>
+                    <h4>全螢幕體驗</h4>
+                    <p>如同原生 App</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">📴</div>
+                    <h4>離線瀏覽</h4>
+                    <p>部分功能可離線使用</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">🔔</div>
+                    <h4>推播通知</h4>
+                    <p>接收用餐提醒</p>
+                </div>
+            </div>
+
+            <!-- 已安裝提示 -->
+            <div class="already-installed" id="alreadyInstalled">
+                <div class="icon">✅</div>
+                <h3>已安裝健康數據助理</h3>
+                <p>您已經將健康數據助理加入主畫面！</p>
+            </div>
+
+            <!-- 快速安裝按鈕 (僅支援的瀏覽器顯示) -->
+            <button class="install-btn" id="installBtn" onclick="installPWA()">
+                立即安裝健康數據助理
+            </button>
+        </div>
+
+        <!-- 安裝步驟 -->
+        <div class="card">
+            <h2><span class="icon">📖</span> 安裝教學</h2>
+
+            <!-- 平台選擇 -->
+            <div class="platform-tabs">
+                <div class="platform-tab active" data-platform="ios" onclick="showPlatform('ios')">
+                    <div class="icon">🍎</div>
+                    <div class="name">iPhone / iPad</div>
+                </div>
+                <div class="platform-tab" data-platform="android" onclick="showPlatform('android')">
+                    <div class="icon">🤖</div>
+                    <div class="name">Android</div>
+                </div>
+                <div class="platform-tab" data-platform="desktop" onclick="showPlatform('desktop')">
+                    <div class="icon">💻</div>
+                    <div class="name">電腦版</div>
+                </div>
+            </div>
+
+            <!-- iOS 說明 -->
+            <div class="instructions active" id="ios-instructions">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>使用 Safari 開啟</h4>
+                        <p>請確保您是使用 <strong>Safari 瀏覽器</strong>開啟此網站。其他瀏覽器（如 Chrome）無法在 iOS 上安裝 PWA。</p>
+                        <div class="step-image">
+                            <div class="placeholder">🧭</div>
+                            <p>Safari 瀏覽器圖示</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>點擊分享按鈕</h4>
+                        <p>在 Safari 底部工具列，點擊中間的 <span class="highlight">分享</span> 按鈕（方形加上箭頭的圖示）。</p>
+                        <div class="step-image">
+                            <div class="placeholder">⬆️</div>
+                            <p>分享按鈕位於底部中央</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>選擇「加入主畫面」</h4>
+                        <p>在分享選單中向下滑動，找到並點擊 <span class="highlight">加入主畫面</span> 選項。</p>
+                        <div class="step-image">
+                            <div class="placeholder">➕</div>
+                            <p>加入主畫面選項</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>確認新增</h4>
+                        <p>確認名稱為「健康助理」，然後點擊右上角的 <span class="highlight">新增</span> 按鈕即可完成！</p>
+                        <div class="step-image">
+                            <div class="placeholder">✅</div>
+                            <p>點擊「新增」完成安裝</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Android 說明 -->
+            <div class="instructions" id="android-instructions">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>使用 Chrome 開啟</h4>
+                        <p>請使用 <strong>Chrome 瀏覽器</strong>開啟此網站以獲得最佳體驗。</p>
+                        <div class="step-image">
+                            <div class="placeholder">🌐</div>
+                            <p>Chrome 瀏覽器圖示</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>點擊選單按鈕</h4>
+                        <p>點擊 Chrome 右上角的 <span class="highlight">⋮</span> 選單按鈕（三個點）。</p>
+                        <div class="step-image">
+                            <div class="placeholder">⋮</div>
+                            <p>選單按鈕位於右上角</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>選擇「安裝應用程式」或「加到主畫面」</h4>
+                        <p>在選單中找到 <span class="highlight">安裝應用程式</span> 或 <span class="highlight">加到主畫面</span> 選項並點擊。</p>
+                        <div class="step-image">
+                            <div class="placeholder">📲</div>
+                            <p>安裝應用程式選項</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>確認安裝</h4>
+                        <p>在彈出的對話框中點擊 <span class="highlight">安裝</span> 即可完成！App 圖示將出現在您的主畫面上。</p>
+                        <div class="step-image">
+                            <div class="placeholder">✅</div>
+                            <p>點擊「安裝」完成</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 電腦版說明 -->
+            <div class="instructions" id="desktop-instructions">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>使用 Chrome 或 Edge 開啟</h4>
+                        <p>請使用 <strong>Chrome</strong> 或 <strong>Microsoft Edge</strong> 瀏覽器開啟此網站。</p>
+                        <div class="step-image">
+                            <div class="placeholder">🌐</div>
+                            <p>Chrome 或 Edge 瀏覽器</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>尋找安裝圖示</h4>
+                        <p>在網址列右側，您會看到一個 <span class="highlight">安裝</span> 圖示（電腦加上箭頭），或者點擊選單中的「安裝健康數據助理」。</p>
+                        <div class="step-image">
+                            <div class="placeholder">💻</div>
+                            <p>安裝圖示在網址列右側</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>確認安裝</h4>
+                        <p>點擊安裝按鈕後，在彈出的對話框中確認 <span class="highlight">安裝</span>。</p>
+                        <div class="step-image">
+                            <div class="placeholder">✅</div>
+                            <p>確認安裝對話框</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>從桌面或開始選單開啟</h4>
+                        <p>安裝完成後，您可以從桌面捷徑或開始選單中找到並開啟健康數據助理！</p>
+                        <div class="step-image">
+                            <div class="placeholder">🎉</div>
+                            <p>安裝完成！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tips">
+                <h4>💡 小提示</h4>
+                <ul>
+                    <li>安裝後從主畫面開啟，可享有全螢幕體驗</li>
+                    <li>PWA 會自動更新，無需手動更新</li>
+                    <li>如需移除，長按圖示選擇刪除即可</li>
+                    <li>建議開啟通知權限，接收用餐提醒</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 偵測裝置類型並自動選擇對應說明
+        function detectPlatform() {
+            const ua = navigator.userAgent.toLowerCase();
+
+            if (/iphone|ipad|ipod/.test(ua)) {
+                return 'ios';
+            } else if (/android/.test(ua)) {
+                return 'android';
+            } else {
+                return 'desktop';
+            }
+        }
+
+        // 切換平台說明
+        function showPlatform(platform) {
+            // 更新 tab 狀態
+            document.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.platform === platform) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // 更新說明內容
+            document.querySelectorAll('.instructions').forEach(inst => {
+                inst.classList.remove('active');
+            });
+            document.getElementById(platform + '-instructions').classList.add('active');
+        }
+
+        // PWA 安裝提示
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // 顯示安裝按鈕
+            document.getElementById('installBtn').classList.add('show');
+        });
+
+        // 點擊安裝按鈕
+        async function installPWA() {
+            if (!deferredPrompt) {
+                alert('請使用瀏覽器選單中的「安裝」或「加入主畫面」功能');
+                return;
+            }
+
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+
+            if (outcome === 'accepted') {
+                console.log('PWA 安裝成功');
+                document.getElementById('installBtn').classList.remove('show');
+                document.getElementById('alreadyInstalled').classList.add('show');
+            }
+
+            deferredPrompt = null;
+        }
+
+        // 檢查是否已安裝
+        function checkInstalled() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                document.getElementById('alreadyInstalled').classList.add('show');
+                document.getElementById('installBtn').classList.remove('show');
+                return true;
+            }
+            return false;
+        }
+
+        // 頁面載入時
+        document.addEventListener('DOMContentLoaded', () => {
+            // 自動偵測並顯示對應平台說明
+            const platform = detectPlatform();
+            showPlatform(platform);
+
+            // 檢查是否已安裝
+            checkInstalled();
+        });
+
+        // 監聽安裝完成事件
+        window.addEventListener('appinstalled', () => {
+            console.log('健康數據助理 已安裝');
+            document.getElementById('alreadyInstalled').classList.add('show');
+            document.getElementById('installBtn').classList.remove('show');
+        });
+    </script>
+</body>
+</html>

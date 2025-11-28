@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的飲食記錄</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- Markdown 解析器 (marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .records-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .record-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .record-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .record-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .record-date {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .record-time {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .record-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .record-image-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .record-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .record-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .predictions-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .prediction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .food-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .confidence {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .nutrition-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .nutrition-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .nutrition-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .nutrition-unit {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .ai-advice-section {
+            grid-column: 1 / -1;
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffa726;
+        }
+
+        .ai-advice-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f57c00;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-advice-content {
+            color: #5d4037;
+            line-height: 1.6;
+        }
+
+        /* Markdown 渲染樣式 */
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            color: #667eea;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+        .markdown-content h1 { font-size: 1.3em; }
+        .markdown-content h2 { font-size: 1.15em; }
+        .markdown-content h3 { font-size: 1.05em; }
+        .markdown-content p { margin-bottom: 8px; }
+        .markdown-content ul, .markdown-content ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .markdown-content li { margin: 4px 0; }
+        .markdown-content strong { font-weight: 600; }
+        .markdown-content hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 12px 0;
+        }
+        .markdown-content blockquote {
+            border-left: 3px solid #667eea;
+            padding-left: 12px;
+            margin: 8px 0;
+            color: #666;
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .rag-suggestions-section {
+            grid-column: 1 / -1;
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #66bb6a;
+        }
+
+        .rag-suggestions-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .rag-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .rag-food-name {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .rag-suggestion {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+        }
+
+        .empty-state h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* ===== 響應式設計 ===== */
+
+        /* 大螢幕 (桌面) */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1200px;
+            }
+        }
+
+        /* 中等螢幕 (平板) */
+        @media (max-width: 1199px) and (min-width: 769px) {
+            .container {
+                max-width: 95%;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .record-body {
+                gap: 15px;
+                padding: 15px;
+            }
+        }
+
+        /* 小螢幕 (手機橫向 & 小平板) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .record-body {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .nutrition-item {
+                padding: 10px;
+            }
+
+            .nutrition-value {
+                font-size: 18px;
+            }
+
+            .record-header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .record-header > div:last-child {
+                text-align: center !important;
+            }
+
+            .predictions-list {
+                padding: 12px;
+            }
+
+            .ai-advice-section,
+            .rag-suggestions-section {
+                padding: 15px;
+            }
+
+            .ai-advice-title,
+            .rag-suggestions-title {
+                font-size: 16px;
+            }
+
+            .ai-advice-content {
+                font-size: 14px;
+            }
+        }
+
+        /* 超小螢幕 (手機直向) */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .header {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .user-info {
+                gap: 8px;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            #userName {
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .record-card {
+                border-radius: 10px;
+            }
+
+            .record-header {
+                padding: 12px;
+            }
+
+            .record-date {
+                font-size: 14px;
+            }
+
+            .record-time {
+                font-size: 12px;
+            }
+
+            .record-header div[style*="font-size: 24px"] {
+                font-size: 20px !important;
+            }
+
+            .record-body {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .nutrition-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            .nutrition-item {
+                padding: 8px;
+            }
+
+            .nutrition-label {
+                font-size: 11px;
+            }
+
+            .nutrition-value {
+                font-size: 16px;
+            }
+
+            .nutrition-unit {
+                font-size: 10px;
+            }
+
+            .predictions-list {
+                padding: 10px;
+            }
+
+            .predictions-list h3 {
+                font-size: 14px;
+            }
+
+            .prediction-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .food-name {
+                font-size: 14px;
+            }
+
+            .prediction-item > div > div:nth-child(2) {
+                font-size: 11px !important;
+            }
+
+            .confidence {
+                align-self: flex-end;
+                font-size: 12px;
+                padding: 3px 10px;
+            }
+
+            .ai-advice-section,
+            .rag-suggestions-section {
+                padding: 12px;
+                border-radius: 8px;
+            }
+
+            .ai-advice-title,
+            .rag-suggestions-title {
+                font-size: 14px;
+            }
+
+            .ai-advice-content {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .rag-item {
+                padding: 10px;
+            }
+
+            .rag-food-name {
+                font-size: 14px;
+            }
+
+            .rag-suggestion {
+                font-size: 12px;
+            }
+
+            .empty-state {
+                padding: 40px 15px;
+            }
+
+            .empty-state h2 {
+                font-size: 18px;
+            }
+
+            .empty-state p {
+                font-size: 14px;
+            }
+
+            .loading p {
+                font-size: 16px;
+            }
+
+            /* Markdown 內容響應式 */
+            .markdown-content h1 { font-size: 1.1em; }
+            .markdown-content h2 { font-size: 1em; }
+            .markdown-content h3 { font-size: 0.95em; }
+            .markdown-content {
+                font-size: 13px;
+            }
+        }
+
+        /* 觸控裝置優化 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+            }
+
+            .record-card:hover {
+                transform: none;
+            }
+
+            .record-card:active {
+                transform: scale(0.99);
+            }
+
+            .btn:active {
+                transform: scale(0.98);
+            }
+        }
+
+        /* ===== 底部導航欄 ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        /* 為底部導航留出空間 */
+        body {
+            padding-bottom: 80px;
+        }
+
+        /* 手機版底部導航優化 */
+        @media (max-width: 480px) {
+            .nav-item {
+                font-size: 10px;
+                padding: 5px 5px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .bottom-nav {
+                padding: 5px 0;
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .header {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .header h1 {
+            color: #667eea;
+        }
+
+        body.dark-mode .header p {
+            color: #888 !important;
+        }
+
+        body.dark-mode #userName {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .record-card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .record-body {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .predictions-list {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .predictions-list h3 {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .prediction-item {
+            background: #333;
+        }
+
+        body.dark-mode .food-name {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .nutrition-grid {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .ai-advice-section {
+            background: #2a2a2a;
+            border-left-color: #ffa726;
+        }
+
+        body.dark-mode .ai-advice-content {
+            color: #ccc;
+        }
+
+        body.dark-mode .rag-suggestions-section {
+            background: #1a3a1a;
+        }
+
+        body.dark-mode .rag-item {
+            background: #2a4a2a;
+        }
+
+        body.dark-mode .rag-suggestion {
+            color: #a5d6a5;
+        }
+
+        body.dark-mode .empty-state {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .empty-state h2 {
+            color: #667eea;
+        }
+
+        body.dark-mode .empty-state p {
+            color: #888;
+        }
+
+        body.dark-mode .loading {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .nav-item {
+            color: #888;
+        }
+
+        body.dark-mode .nav-item:hover,
+        body.dark-mode .nav-item.active {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頁面標題 -->
+        <div class="header">
+            <div>
+                <h1><img src="logo.png" alt="Logo" class="header-logo">我的飲食記錄</h1>
+                <p style="color: #666; margin-top: 5px;">追蹤您的飲食，邁向健康生活</p>
+            </div>
+            <div class="user-info">
+                <img id="userAvatar" class="user-avatar" style="display: none;">
+                <span id="userName"></span>
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">返回主頁</button>
+                <button class="btn btn-primary" id="logoutBtn" style="display: none;">登出</button>
+            </div>
+        </div>
+
+        <!-- 載入中 -->
+        <div id="loading" class="loading">
+            <p>⏳ 載入飲食記錄中...</p>
+        </div>
+
+        <!-- 錯誤訊息 -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- 飲食記錄列表 -->
+        <div id="recordsContainer" class="records-grid"></div>
+
+        <!-- 空狀態 -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h2>尚無飲食記錄</h2>
+            <p>開始記錄您的第一餐吧！</p>
+            <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                📸 開始拍照記錄
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部導航欄 -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <span class="nav-label">首頁</span>
+        </a>
+        <a href="diet_records.html" class="nav-item active">
+            <div class="nav-icon">🍽️</div>
+            <span class="nav-label">記錄</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">📷</div>
+            <span class="nav-label">辨識</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <span class="nav-label">統計</span>
+        </a>
+        <a href="chat.html" class="nav-item">
+            <div class="nav-icon">💬</div>
+            <span class="nav-label">諮詢</span>
+        </a>
+        <a href="exercise.html" class="nav-item">
+            <div class="nav-icon">🏃</div>
+            <span class="nav-label">運動</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <span class="nav-label">設定</span>
+        </a>
+    </nav>
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/security.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Markdown 解析函式（搭配安全過濾）
+        function parseMarkdown(text) {
+            if (!text) return '';
+            if (typeof marked !== 'undefined') {
+                marked.setOptions({ breaks: true, gfm: true });
+                let html = marked.parse(text);
+                // 使用安全工具過濾 XSS
+                if (typeof BentoAISecurity !== 'undefined') {
+                    html = BentoAISecurity.sanitizeHtml(html);
+                }
+                return html;
+            }
+            // 如果 marked 未載入，使用基本格式化（同時跳脫 HTML）
+            if (typeof BentoAISecurity !== 'undefined') {
+                text = BentoAISecurity.escapeHtml(text);
+            }
+            return text.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        }
+
+        // Firebase 配置（必須與 index.html 一致才能共享登入狀態）
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        /* 舊版配置（已註解）
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuxlBQkdAR6hfyiS_lB0Qb0w6f6eIWGrI",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "302949089680",
+            appId: "1:302949089680:web:a81edf867f8f99a1f4cac3",
+            measurementId: "G-M4FMHD3YVW"
+        };
+        */
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // 啟用 session 持久化
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+        let currentUser = null;
+        // let isInitializing = true;  // 舊版：使用 isInitializing 標誌
+        let hasCheckedAuth = false;  // 新版：防止 onAuthStateChanged 重複處理
+
+        // 監聽登入狀態
+        auth.onAuthStateChanged(async (user) => {
+            // console.log('[飲食記錄] onAuthStateChanged 觸發', { user: user ? user.uid : null, isInitializing });  // 舊版 log
+            console.log('[飲食記錄] onAuthStateChanged 觸發', { user: user ? user.uid : null, hasCheckedAuth });
+
+            // 新增：防止重複處理
+            if (hasCheckedAuth) {
+                console.log('[飲食記錄] 已處理過認證，跳過');
+                return;
+            }
+            hasCheckedAuth = true;
+
+            if (user) {
+                console.log('[飲食記錄] 用戶已登入:', user.email);
+                currentUser = user;
+                // isInitializing = false;  // 舊版：設定初始化完成
+
+                // 更新用戶資訊
+                document.getElementById('userName').textContent = user.displayName || user.email;
+
+                if (user.photoURL) {
+                    const avatar = document.getElementById('userAvatar');
+                    avatar.src = user.photoURL;
+                    avatar.style.display = 'block';
+                }
+
+                document.getElementById('logoutBtn').style.display = 'block';
+
+                // 載入飲食記錄
+                console.log('[飲食記錄] 開始載入記錄...');
+                await loadDietRecords();
+            } else {
+                console.log('[飲食記錄] user is null, hasCheckedAuth:', hasCheckedAuth);
+
+                // 舊版邏輯：使用 isInitializing 和 setTimeout 等待
+                /*
+                // 只在初始化完成後才檢查登入狀態
+                if (!isInitializing) {
+                    console.log('[飲食記錄] 已初始化完成但無用戶，導向登入頁');
+                    alert('請先登入');
+                    window.location.href = 'index.html';
+                } else {
+                    console.log('[飲食記錄] 等待 1 秒讓 Firebase Auth 恢復 session...');
+                    // 給 Firebase Auth 一些時間來恢復 session
+                    setTimeout(() => {
+                        isInitializing = false;
+                        const checkUser = auth.currentUser;
+                        console.log('[飲食記錄] 1 秒後檢查用戶:', checkUser ? checkUser.uid : null);
+                        // 如果仍然沒有用戶，則導向登入頁
+                        if (!checkUser) {
+                            console.log('[飲食記錄] 1 秒後仍無用戶，導向登入頁');
+                            alert('請先登入');
+                            window.location.href = 'index.html';
+                        } else {
+                            console.log('[飲食記錄] 1 秒後找到用戶，重新觸發載入');
+                            // 用戶已恢復，重新觸發載入
+                            currentUser = checkUser;
+                            loadDietRecords();
+                        }
+                    }, 1000);
+                }
+                */
+
+                // 新版邏輯：onAuthStateChanged 已確保 Firebase Auth 初始化完成，直接導向登入頁
+                console.log('[飲食記錄] ✗ Firebase Auth 已初始化但無用戶，導向登入頁');
+                document.getElementById('loading').style.display = 'none';
+                alert('請先登入');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // 登出
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('登出失敗:', error);
+                alert('登出失敗: ' + error.message);
+            }
+        });
+
+        // 載入飲食記錄
+        async function loadDietRecords() {
+            console.log('[飲食記錄] loadDietRecords() 開始');
+            console.log('[飲食記錄] currentUser:', currentUser ? currentUser.uid : null);
+
+            try {
+                const idToken = await currentUser.getIdToken();
+                console.log('[飲食記錄] Token 取得成功，長度:', idToken.length);
+
+                console.log('[飲食記錄] 發送 API 請求到 /api/diet-records');
+
+                // 添加時間戳避免瀏覽器快取，確保每次 F5 刷新都能獲取最新數據
+                const timestamp = new Date().getTime();
+                const response = await fetch(`https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records?limit=20&t=${timestamp}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    cache: 'no-store'
+                });
+
+                console.log('[飲食記錄] API 回應狀態:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('[飲食記錄] API 回應資料:', data);
+
+                // 隱藏載入中
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success) {
+                    console.error('[飲食記錄] API 回傳失敗:', data.error);
+                    showError(data.error || '載入失敗');
+                    return;
+                }
+
+                if (!data.data || data.data.length === 0) {
+                    console.log('[飲食記錄] 無記錄，顯示空狀態');
+                    document.getElementById('emptyState').style.display = 'block';
+                    return;
+                }
+
+                console.log('[飲食記錄] 找到', data.data.length, '筆記錄');
+                // 顯示記錄
+                displayRecords(data.data);
+
+            } catch (error) {
+                console.error('[飲食記錄] 載入記錄失敗:', error);
+                document.getElementById('loading').style.display = 'none';
+                showError('載入失敗: ' + error.message);
+            }
+        }
+
+        // 顯示錯誤
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        // 顯示記錄
+        // 根據營養素數值計算顏色（與統計圖表一致）
+        function getNutrientColor(nutrient, value) {
+            switch(nutrient) {
+                case 'fiber':
+                    // 膳食纖維：25-35g 達標
+                    if (value >= 25 && value <= 35) return 'rgba(75, 192, 192, 0.8)';  // 綠色
+                    else if (value < 25) return 'rgba(255, 159, 64, 0.8)';  // 橘色
+                    else return 'rgba(255, 99, 132, 0.8)';  // 紅色
+
+                case 'sodium':
+                    // 鈉：<2300mg 正常
+                    if (value <= 2300) return 'rgba(75, 192, 192, 0.8)';  // 綠色
+                    else if (value <= 3000) return 'rgba(255, 206, 86, 0.8)';  // 黃色
+                    else return 'rgba(255, 99, 132, 0.8)';  // 紅色
+
+                case 'calories':
+                    return 'rgba(102, 126, 234, 0.8)';  // 紫藍色
+                case 'protein':
+                    return 'rgba(255, 99, 132, 0.8)';  // 紅色
+                case 'fat':
+                    return 'rgba(255, 206, 86, 0.8)';  // 黃色
+                case 'carbs':
+                    return 'rgba(54, 162, 235, 0.8)';  // 藍色
+                default:
+                    return 'rgba(200, 200, 200, 0.8)';  // 灰色
+            }
+        }
+
+        function displayRecords(records) {
+            const container = document.getElementById('recordsContainer');
+            container.innerHTML = '';
+
+            records.forEach(record => {
+                const card = createRecordCard(record);
+                container.appendChild(card);
+            });
+        }
+
+        // 建立記錄卡片
+        function createRecordCard(record) {
+            const card = document.createElement('div');
+            card.className = 'record-card';
+
+            // 格式化日期
+            const date = new Date(record.created_at || record.timestamp);
+            const dateStr = date.toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            const timeStr = date.toLocaleTimeString('zh-TW', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            card.innerHTML = `
+                <div class="record-header">
+                    <div>
+                        <div class="record-date">${dateStr}</div>
+                        <div class="record-time">${timeStr}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 24px; font-weight: 700;">
+                            ${record.total_nutrition?.total_cal || 0} <span style="font-size: 14px;">大卡</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="record-body">
+                    <!-- 圖片區域 -->
+                    <div class="record-image-section">
+                        ${record.has_image && (record.image_base64 || record.image_path) ? `
+                            <img class="record-image"
+                                 src="${record.image_base64 ?
+                                      `data:image/${record.image_format || 'jpeg'};base64,${record.image_base64}` :
+                                      record.image_path}"
+                                 alt="食物照片"
+                                 onerror="this.parentElement.innerHTML='<div style=\\'text-align: center; color: #999;\\'>圖片載入失敗</div>'">
+                        ` : '<div style="text-align: center; color: #999;">無圖片</div>'}
+
+                        <!-- 辨識結果 -->
+                        <div class="predictions-list">
+                            <h3 style="margin-bottom: 10px; color: #333;">🍴 辨識食物</h3>
+                            ${(record.predictions || []).map(pred => `
+                                <div class="prediction-item">
+                                    <div>
+                                        <div class="food-name">${pred.class_name}</div>
+                                        ${pred.nutrition ? `
+                                            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                                                ${pred.nutrition.cal || 0}卡 |
+                                                蛋白質${pred.nutrition.p || 0}g |
+                                                脂肪${pred.nutrition.f || 0}g |
+                                                碳水${pred.nutrition.c || 0}g |
+                                                纖維${pred.nutrition.fiber || 0}g |
+                                                鈉${pred.nutrition.sodium || 0}mg
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <span class="confidence">${Math.round((pred.confidence || 1) * 100)}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 營養資訊區域 -->
+                    <div class="record-info-section">
+                        <div class="nutrition-grid">
+                            <div class="nutrition-item" style="background: ${getNutrientColor('calories', record.total_nutrition?.total_cal)}; border-left: 3px solid ${getNutrientColor('calories', record.total_nutrition?.total_cal)};">
+                                <div class="nutrition-label" style="color: white;">熱量</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_cal || 0}
+                                    <span class="nutrition-unit">大卡</span>
+                                </div>
+                            </div>
+                            <div class="nutrition-item" style="background: ${getNutrientColor('protein', record.total_nutrition?.total_pro)}; border-left: 3px solid ${getNutrientColor('protein', record.total_nutrition?.total_pro)};">
+                                <div class="nutrition-label" style="color: white;">蛋白質</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_pro || 0}
+                                    <span class="nutrition-unit">克</span>
+                                </div>
+                            </div>
+                            <div class="nutrition-item" style="background: ${getNutrientColor('fat', record.total_nutrition?.total_fat)}; border-left: 3px solid ${getNutrientColor('fat', record.total_nutrition?.total_fat)};">
+                                <div class="nutrition-label" style="color: white;">脂肪</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_fat || 0}
+                                    <span class="nutrition-unit">克</span>
+                                </div>
+                            </div>
+                            <div class="nutrition-item" style="background: ${getNutrientColor('carbs', record.total_nutrition?.total_carb)}; border-left: 3px solid ${getNutrientColor('carbs', record.total_nutrition?.total_carb)};">
+                                <div class="nutrition-label" style="color: white;">碳水化合物</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_carb || 0}
+                                    <span class="nutrition-unit">克</span>
+                                </div>
+                            </div>
+                            <div class="nutrition-item" style="background: ${getNutrientColor('fiber', record.total_nutrition?.total_fiber || 0)}; border-left: 3px solid ${getNutrientColor('fiber', record.total_nutrition?.total_fiber || 0)};">
+                                <div class="nutrition-label" style="color: white;">膳食纖維</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_fiber || 0}
+                                    <span class="nutrition-unit">克</span>
+                                </div>
+                            </div>
+                            <div class="nutrition-item" style="background: ${getNutrientColor('sodium', record.total_nutrition?.total_sodium || 0)}; border-left: 3px solid ${getNutrientColor('sodium', record.total_nutrition?.total_sodium || 0)};">
+                                <div class="nutrition-label" style="color: white;">鈉</div>
+                                <div class="nutrition-value" style="color: white;">
+                                    ${record.total_nutrition?.total_sodium || 0}
+                                    <span class="nutrition-unit">毫克</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${record.gemini_reply ? `
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                                <h4 style="color: #667eea; margin-bottom: 8px;">💡 食物說明</h4>
+                                <div class="markdown-content" style="color: #555; line-height: 1.5; font-size: 14px;">${parseMarkdown(record.gemini_reply)}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- AI 飲食建議 -->
+                    ${record.diet_advice ? `
+                        <div class="ai-advice-section">
+                            <div class="ai-advice-title">
+                                🤖 AI 飲食建議
+                            </div>
+                            <div class="ai-advice-content markdown-content">${parseMarkdown(record.diet_advice)}</div>
+                        </div>
+                    ` : ''}
+
+                    <!-- RAG 額外建議 -->
+                    ${record.rag_suggestions && record.rag_suggestions.length > 0 ? `
+                        <div class="rag-suggestions-section">
+                            <div class="rag-suggestions-title">
+                                📚 營養知識庫建議
+                            </div>
+                            ${record.rag_suggestions.map(rag => `
+                                <div class="rag-item">
+                                    <div class="rag-food-name">${rag.food}</div>
+                                    ${rag.suggestions.map((sugg, idx) => `
+                                        <div class="rag-suggestion">
+                                            ${idx + 1}. ${sugg.substring(0, 150)}${sugg.length > 150 ? '...' : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+    </script>
+</body>
+</html>

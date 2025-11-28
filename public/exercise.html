@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>運動建議 - 營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/security.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+
+    <!-- Markdown 解析器 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-refresh {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-refresh:hover {
+            background: #059669;
+        }
+
+        /* 用戶摘要卡片 */
+        .user-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .user-summary h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f3ff 100%);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        /* 載入狀態 */
+        .loading {
+            background: white;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* 無資料提示 */
+        .no-profile {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .no-profile-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .no-profile h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .no-profile p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        /* 運動建議內容 */
+        .recommendation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .recommendation-header h2 {
+            color: #333;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendation-content {
+            line-height: 1.8;
+            color: #444;
+        }
+
+        /* Markdown 渲染樣式 */
+        .recommendation-content h1 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .recommendation-content h2 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin: 20px 0 12px 0;
+        }
+
+        .recommendation-content h3 {
+            color: #333;
+            font-size: 1.15em;
+            margin: 15px 0 10px 0;
+        }
+
+        .recommendation-content p {
+            margin-bottom: 12px;
+        }
+
+        .recommendation-content ul,
+        .recommendation-content ol {
+            margin: 12px 0;
+            padding-left: 25px;
+        }
+
+        .recommendation-content li {
+            margin: 8px 0;
+        }
+
+        .recommendation-content strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .recommendation-content hr {
+            border: none;
+            border-top: 2px dashed #e0e0e0;
+            margin: 25px 0;
+        }
+
+        .recommendation-content blockquote {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            color: #5d4037;
+        }
+
+        .recommendation-content code {
+            background: #f4f4f4;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* 快速提示區 */
+        .quick-tips {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .quick-tips h4 {
+            color: #2e7d32;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-tips ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .quick-tips li {
+            padding: 8px 0;
+            color: #33691e;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .quick-tips li::before {
+            content: ">";
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        /* 錯誤訊息 */
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #ef5350;
+        }
+
+        /* 進度追蹤卡片 */
+        .progress-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 4px solid #2196f3;
+        }
+
+        .progress-card h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .progress-stat {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .progress-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1565c0;
+        }
+
+        .progress-stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .progress-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .progress-change.positive {
+            color: #4caf50;
+        }
+
+        .progress-change.negative {
+            color: #f44336;
+        }
+
+        /* 反饋區塊 */
+        .feedback-section {
+            background: #fff3e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .feedback-section h4 {
+            color: #e65100;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-btn:hover {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .feedback-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .feedback-btn.selected:hover {
+            opacity: 0.9;
+        }
+
+        .feedback-success {
+            color: #4caf50;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* ===== 響應式設計 ===== */
+
+        /* 大螢幕 (桌面) */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+        }
+
+        /* 中等螢幕 (平板) */
+        @media (max-width: 1199px) and (min-width: 769px) {
+            .container {
+                max-width: 95%;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* 小螢幕 (手機橫向 & 小平板) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            .user-summary {
+                padding: 20px;
+            }
+
+            .user-summary h3 {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+
+            .user-summary h3 span:last-child {
+                margin-left: 0 !important;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .summary-item {
+                padding: 12px;
+            }
+
+            .summary-value {
+                font-size: 16px;
+            }
+
+            .quick-tips {
+                padding: 15px;
+            }
+
+            .quick-tips h4 {
+                font-size: 15px;
+            }
+
+            .recommendation-card {
+                padding: 20px;
+            }
+
+            .recommendation-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .recommendation-header h2 {
+                font-size: 18px;
+            }
+
+            .recommendation-content {
+                font-size: 15px;
+                line-height: 1.7;
+            }
+
+            .recommendation-content h1 {
+                font-size: 1.3em;
+            }
+
+            .recommendation-content h2 {
+                font-size: 1.15em;
+            }
+
+            .recommendation-content h3 {
+                font-size: 1.05em;
+            }
+
+            .no-profile {
+                padding: 40px 20px;
+            }
+
+            .no-profile-icon {
+                font-size: 48px;
+            }
+
+            .no-profile h2 {
+                font-size: 20px;
+            }
+
+            .no-profile p {
+                font-size: 14px;
+            }
+
+            .loading {
+                padding: 40px 20px;
+            }
+
+            .error-message {
+                padding: 15px;
+                font-size: 14px;
+            }
+        }
+
+        /* 超小螢幕 (手機直向) */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .header {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .header-actions {
+                gap: 6px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                border-radius: 8px;
+            }
+
+            .user-summary {
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+            }
+
+            .user-summary h3 {
+                font-size: 15px;
+                margin-bottom: 15px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .summary-item {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .summary-label {
+                font-size: 11px;
+            }
+
+            .summary-value {
+                font-size: 14px;
+            }
+
+            .quick-tips {
+                padding: 12px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+            }
+
+            .quick-tips h4 {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+
+            .quick-tips li {
+                font-size: 13px;
+                padding: 6px 0;
+            }
+
+            .recommendation-card {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            .recommendation-header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+
+            .recommendation-header h2 {
+                font-size: 16px;
+            }
+
+            #generatedTime {
+                font-size: 12px !important;
+            }
+
+            .recommendation-content {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .recommendation-content h1 {
+                font-size: 1.2em;
+                margin: 20px 0 12px 0;
+            }
+
+            .recommendation-content h2 {
+                font-size: 1.1em;
+                margin: 16px 0 10px 0;
+            }
+
+            .recommendation-content h3 {
+                font-size: 1em;
+                margin: 12px 0 8px 0;
+            }
+
+            .recommendation-content ul,
+            .recommendation-content ol {
+                padding-left: 20px;
+            }
+
+            .recommendation-content li {
+                margin: 6px 0;
+            }
+
+            .recommendation-content blockquote {
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+
+            .recommendation-content hr {
+                margin: 20px 0;
+            }
+
+            .no-profile {
+                padding: 30px 15px;
+                border-radius: 10px;
+            }
+
+            .no-profile-icon {
+                font-size: 40px;
+                margin-bottom: 15px;
+            }
+
+            .no-profile h2 {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .no-profile p {
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+
+            .loading {
+                padding: 30px 15px;
+                border-radius: 10px;
+            }
+
+            .spinner {
+                width: 40px;
+                height: 40px;
+            }
+
+            .loading p {
+                font-size: 14px;
+            }
+
+            .error-message {
+                padding: 12px;
+                font-size: 13px;
+                border-radius: 8px;
+            }
+        }
+
+        /* 觸控裝置優化 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+            }
+
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .summary-item:active {
+                transform: scale(0.98);
+            }
+        }
+
+        /* 底部導航欄 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-label {
+            font-weight: 500;
+        }
+
+        @media (max-width: 480px) {
+            .nav-item {
+                font-size: 10px;
+                padding: 5px 5px;
+                min-width: 50px;
+            }
+
+            .nav-icon {
+                font-size: 18px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .bottom-nav {
+                padding: 5px 0;
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .header {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .header h1 {
+            color: #667eea;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #444;
+        }
+
+        body.dark-mode .profile-summary {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .profile-item {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .profile-item span:first-child {
+            color: #888;
+        }
+
+        body.dark-mode .profile-item span:last-child {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .recommendation-card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .recommendation-title {
+            color: #667eea;
+        }
+
+        body.dark-mode .recommendation-content {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .recommendation-content h1,
+        body.dark-mode .recommendation-content h2,
+        body.dark-mode .recommendation-content h3 {
+            color: #667eea;
+        }
+
+        body.dark-mode .recommendation-content blockquote {
+            background: #2a2a2a;
+            color: #ccc;
+        }
+
+        body.dark-mode .recommendation-content code {
+            background: #333;
+        }
+
+        body.dark-mode .loading-card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .loading-card p {
+            color: #888;
+        }
+
+        body.dark-mode .empty-card {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .empty-card h3 {
+            color: #667eea;
+        }
+
+        body.dark-mode .empty-card p {
+            color: #888;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .nav-item {
+            color: #888;
+        }
+
+        body.dark-mode .nav-item:hover,
+        body.dark-mode .nav-item.active {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頁首 -->
+        <div class="header">
+            <h1>
+                <img src="logo.png" alt="Logo" class="header-logo">
+                個人化運動建議
+            </h1>
+            <div class="header-actions">
+                <button class="btn btn-refresh" onclick="refreshRecommendation()">
+                    &#x21BB; 重新生成
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='profile_setup.html'">
+                    &#9998; 編輯資料
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                    &#8592; 返回主頁
+                </button>
+            </div>
+        </div>
+
+        <!-- 載入中 -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>正在生成您的個人化運動建議...</p>
+            <p style="font-size: 14px; color: #999; margin-top: 10px;">這可能需要幾秒鐘</p>
+        </div>
+
+        <!-- 無資料提示 -->
+        <div id="noProfile" class="no-profile" style="display: none;">
+            <div class="no-profile-icon">&#128170;</div>
+            <h2>尚未設定運動資料</h2>
+            <p>
+                請先完成個人資料設定中的「運動習慣」部分，<br>
+                系統才能為您生成個人化的運動建議。
+            </p>
+            <button class="btn btn-primary" onclick="window.location.href='profile_setup.html'">
+                &#9989; 前往設定
+            </button>
+        </div>
+
+        <!-- 錯誤訊息 -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- 進度追蹤卡片 -->
+        <div id="progressCard" class="progress-card" style="display: none;">
+            <h3>
+                <span>&#128200;</span>
+                您的運動進度追蹤
+            </h3>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="historyCount">0</div>
+                    <div class="progress-stat-label">累計建議次數</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="currentWeight">-</div>
+                    <div class="progress-stat-label">目前體重</div>
+                    <div class="progress-change" id="weightChange"></div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="currentBMI">-</div>
+                    <div class="progress-stat-label">目前 BMI</div>
+                    <div class="progress-change" id="bmiChange"></div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="executedCount">0</div>
+                    <div class="progress-stat-label">已執行建議</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用戶摘要 -->
+        <div id="userSummary" class="user-summary" style="display: none;">
+            <h3>
+                <span>&#128100;</span>
+                您的運動資料摘要
+                <span style="font-size: 12px; color: #999; font-weight: normal; margin-left: auto;">
+                    (根據最新個人資料動態生成)
+                </span>
+            </h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">健康目標</div>
+                    <div class="summary-value" id="goalText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">目前體重</div>
+                    <div class="summary-value" id="weightText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">BMI</div>
+                    <div class="summary-value" id="bmiText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">運動頻率</div>
+                    <div class="summary-value" id="frequencyText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">運動經驗</div>
+                    <div class="summary-value" id="experienceText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">每次時間</div>
+                    <div class="summary-value" id="timeText">-</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">身體限制</div>
+                    <div class="summary-value" id="limitationsText">無</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速提示 -->
+        <div id="quickTips" class="quick-tips" style="display: none;">
+            <h4>
+                <span>&#128161;</span>
+                今日運動小提示
+            </h4>
+            <ul id="tipsList"></ul>
+        </div>
+
+        <!-- 運動建議內容 -->
+        <div id="recommendationCard" class="recommendation-card" style="display: none;">
+            <div class="recommendation-header">
+                <h2>
+                    <span>&#128203;</span>
+                    您的專屬運動計畫
+                </h2>
+                <span style="color: #999; font-size: 14px;" id="generatedTime"></span>
+            </div>
+            <div class="recommendation-content" id="recommendationContent"></div>
+
+            <!-- 反饋區塊 -->
+            <div class="feedback-section" id="feedbackSection" style="display: none;">
+                <h4>
+                    <span>&#128172;</span>
+                    這個建議對您有幫助嗎？
+                </h4>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn" data-feedback="helpful" onclick="submitFeedback('helpful')">
+                        <span>&#128077;</span> 有幫助
+                    </button>
+                    <button class="feedback-btn" data-feedback="executed" onclick="submitFeedback('executed')">
+                        <span>&#9989;</span> 我會執行
+                    </button>
+                    <button class="feedback-btn" data-feedback="partially_executed" onclick="submitFeedback('partially_executed')">
+                        <span>&#128221;</span> 部分執行
+                    </button>
+                    <button class="feedback-btn" data-feedback="not_helpful" onclick="submitFeedback('not_helpful')">
+                        <span>&#128078;</span> 需要調整
+                    </button>
+                </div>
+                <div class="feedback-success" id="feedbackSuccess">
+                    <span>&#10003;</span> 感謝您的反饋！下次建議將根據您的回饋進行調整。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        let currentIdToken = null;
+        let currentHistoryId = null;  // 目前建議的歷史記錄 ID
+        let currentProfile = null;    // 目前用戶資料
+
+        // 對應表
+        const goalMap = {
+            0: '維持體重',
+            1: '減重減脂',
+            2: '增肌增重',
+            3: '改善健康'
+        };
+
+        const frequencyMap = {
+            0: '幾乎不運動',
+            1: '每週1-2次',
+            2: '每週3-4次',
+            3: '每週5次以上'
+        };
+
+        const experienceMap = {
+            0: '新手',
+            1: '初學者',
+            2: '中級者',
+            3: '進階者'
+        };
+
+        const timeMap = {
+            0: '15-30分鐘',
+            1: '30-60分鐘',
+            2: '60-90分鐘',
+            3: '90分鐘以上'
+        };
+
+        // 監聯登入狀態
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentIdToken = await user.getIdToken();
+                // 先載入進度資料，再載入建議
+                await loadProgressData();
+                loadExerciseRecommendation();
+            } else {
+                alert('請先登入');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // 載入進度資料
+        async function loadProgressData() {
+            try {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/exercise/progress', {
+                    headers: {
+                        'Authorization': `Bearer ${currentIdToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.progress) {
+                    displayProgressCard(data.progress);
+                }
+            } catch (error) {
+                console.error('載入進度資料失敗:', error);
+            }
+        }
+
+        // 顯示進度卡片
+        function displayProgressCard(progress) {
+            document.getElementById('historyCount').textContent = progress.history_count || 0;
+
+            // 體重變化
+            const weightChanges = progress.weight_changes || [];
+            if (weightChanges.length > 0) {
+                const currentWeight = weightChanges[0].weight;
+                document.getElementById('currentWeight').textContent = currentWeight + ' kg';
+
+                if (weightChanges.length >= 2) {
+                    const firstWeight = weightChanges[weightChanges.length - 1].weight;
+                    const diff = currentWeight - firstWeight;
+                    const changeEl = document.getElementById('weightChange');
+                    if (diff !== 0) {
+                        const direction = diff < 0 ? 'positive' : 'negative';
+                        const arrow = diff < 0 ? '&#9660;' : '&#9650;';
+                        changeEl.innerHTML = arrow + ' ' + Math.abs(diff).toFixed(1) + ' kg';
+                        changeEl.className = 'progress-change ' + direction;
+                    }
+                }
+            }
+
+            // BMI 變化
+            const bmiChanges = progress.bmi_changes || [];
+            if (bmiChanges.length > 0) {
+                const currentBMI = bmiChanges[0].bmi;
+                document.getElementById('currentBMI').textContent = currentBMI.toFixed(1);
+
+                if (bmiChanges.length >= 2) {
+                    const firstBMI = bmiChanges[bmiChanges.length - 1].bmi;
+                    const diff = currentBMI - firstBMI;
+                    const changeEl = document.getElementById('bmiChange');
+                    if (diff !== 0) {
+                        const direction = diff < 0 ? 'positive' : 'negative';
+                        const arrow = diff < 0 ? '&#9660;' : '&#9650;';
+                        changeEl.innerHTML = arrow + ' ' + Math.abs(diff).toFixed(1);
+                        changeEl.className = 'progress-change ' + direction;
+                    }
+                }
+            }
+
+            // 已執行次數
+            const feedback = progress.feedback_summary || {};
+            const executed = (feedback.executed || 0) + (feedback.partially_executed || 0);
+            document.getElementById('executedCount').textContent = executed;
+
+            // 顯示進度卡片
+            document.getElementById('progressCard').style.display = 'block';
+        }
+
+        // 載入運動建議
+        async function loadExerciseRecommendation() {
+            showLoading(true);
+
+            try {
+                // 先取得用戶資料
+                const profileResponse = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentIdToken}`
+                    }
+                });
+
+                const profileData = await profileResponse.json();
+
+                if (!profileData.success || !profileData.profile) {
+                    showNoProfile();
+                    return;
+                }
+
+                const profile = profileData.profile;
+
+                // 檢查是否有運動資料
+                if (!profile.hasExerciseProfile) {
+                    showNoProfile();
+                    return;
+                }
+
+                // 顯示用戶摘要
+                displayUserSummary(profile);
+
+                // 取得運動建議
+                const recommendationResponse = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/exercise/recommendation', {
+                    headers: {
+                        'Authorization': `Bearer ${currentIdToken}`
+                    }
+                });
+
+                const recommendationData = await recommendationResponse.json();
+
+                if (recommendationData.success && recommendationData.recommendation) {
+                    // 儲存 history_id 供反饋使用
+                    currentHistoryId = recommendationData.history_id;
+
+                    displayRecommendation(recommendationData.recommendation);
+
+                    // 取得快速提示
+                    loadQuickTips();
+                } else if (recommendationData.error === 'no_exercise_data') {
+                    showNoProfile();
+                } else {
+                    showError(recommendationData.message || '生成運動建議失敗，請稍後再試。');
+                }
+
+            } catch (error) {
+                console.error('載入運動建議失敗:', error);
+                showError('載入失敗: ' + error.message);
+            }
+        }
+
+        // 載入快速提示
+        async function loadQuickTips() {
+            try {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/exercise/quick-tips', {
+                    headers: {
+                        'Authorization': `Bearer ${currentIdToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.tips && data.tips.length > 0) {
+                    displayQuickTips(data.tips);
+                }
+            } catch (error) {
+                console.error('載入快速提示失敗:', error);
+            }
+        }
+
+        // 顯示用戶摘要
+        function displayUserSummary(profile) {
+            document.getElementById('goalText').textContent = goalMap[profile.goal] || '-';
+            document.getElementById('weightText').textContent = profile.weight ? `${profile.weight} kg` : '-';
+            document.getElementById('frequencyText').textContent = frequencyMap[profile.exerciseFrequency] || '-';
+            document.getElementById('experienceText').textContent = experienceMap[profile.exerciseExperience] || '-';
+            document.getElementById('timeText').textContent = timeMap[profile.exerciseTimePerSession] || '-';
+            document.getElementById('bmiText').textContent = profile.BMI ? profile.BMI.toFixed(1) : '-';
+
+            // 身體限制
+            const limitations = profile.physicalLimitations || [];
+            const limitMap = {
+                'knee': '膝蓋', 'back': '腰背', 'shoulder': '肩頸',
+                'heart': '心血管', 'joint': '關節', 'pregnancy': '孕期',
+                'elderly': '年長', 'obesity': '體重'
+            };
+            const limitText = limitations.length > 0
+                ? limitations.map(l => limitMap[l] || l).join('、')
+                : '無';
+            document.getElementById('limitationsText').textContent = limitText;
+
+            document.getElementById('userSummary').style.display = 'block';
+        }
+
+        // 顯示快速提示
+        function displayQuickTips(tips) {
+            const tipsList = document.getElementById('tipsList');
+            tipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+            document.getElementById('quickTips').style.display = 'block';
+        }
+
+        // 顯示運動建議
+        function displayRecommendation(recommendation) {
+            showLoading(false);
+
+            // 使用 marked.js 解析 Markdown（搭配安全過濾）
+            if (typeof marked !== 'undefined') {
+                marked.setOptions({ breaks: true, gfm: true });
+                let html = marked.parse(recommendation);
+                // 使用安全工具過濾 XSS
+                if (typeof BentoAISecurity !== 'undefined') {
+                    html = BentoAISecurity.sanitizeHtml(html);
+                }
+                document.getElementById('recommendationContent').innerHTML = html;
+            } else {
+                document.getElementById('recommendationContent').innerHTML =
+                    BentoAISecurity ? BentoAISecurity.escapeHtml(recommendation).replace(/\n/g, '<br>') :
+                    recommendation.replace(/\n/g, '<br>');
+            }
+
+            // 顯示生成時間
+            const now = new Date();
+            document.getElementById('generatedTime').textContent =
+                '生成時間: ' + now.toLocaleString('zh-TW');
+
+            document.getElementById('recommendationCard').style.display = 'block';
+
+            // 顯示反饋區塊
+            document.getElementById('feedbackSection').style.display = 'block';
+
+            // 重置反饋按鈕狀態
+            document.querySelectorAll('.feedback-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('feedbackSuccess').style.display = 'none';
+        }
+
+        // 提交反饋
+        async function submitFeedback(feedback) {
+            if (!currentHistoryId) {
+                console.error('沒有 history_id 無法提交反饋');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/exercise/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentIdToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        history_id: currentHistoryId,
+                        feedback: feedback
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 更新按鈕狀態
+                    document.querySelectorAll('.feedback-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    document.querySelector(`[data-feedback="${feedback}"]`).classList.add('selected');
+
+                    // 顯示成功訊息
+                    document.getElementById('feedbackSuccess').style.display = 'block';
+                } else {
+                    alert('反饋提交失敗: ' + (data.error || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('提交反饋失敗:', error);
+                alert('提交反饋失敗: ' + error.message);
+            }
+        }
+
+        // 重新生成建議
+        async function refreshRecommendation() {
+            if (confirm('確定要重新生成運動建議嗎？\n這將根據您目前的資料重新計算。')) {
+                document.getElementById('recommendationCard').style.display = 'none';
+                document.getElementById('quickTips').style.display = 'none';
+                loadExerciseRecommendation();
+            }
+        }
+
+        // 顯示載入中
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // 顯示無資料提示
+        function showNoProfile() {
+            showLoading(false);
+            document.getElementById('noProfile').style.display = 'block';
+        }
+
+        // 顯示錯誤訊息
+        function showError(message) {
+            showLoading(false);
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+    </script>
+
+    <!-- 底部導航欄 -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <span class="nav-label">首頁</span>
+        </a>
+        <a href="diet_records.html" class="nav-item">
+            <div class="nav-icon">🍽️</div>
+            <span class="nav-label">記錄</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">📷</div>
+            <span class="nav-label">辨識</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <span class="nav-label">統計</span>
+        </a>
+        <a href="chat.html" class="nav-item">
+            <div class="nav-icon">💬</div>
+            <span class="nav-label">諮詢</span>
+        </a>
+        <a href="exercise.html" class="nav-item active">
+            <div class="nav-icon">🏃</div>
+            <span class="nav-label">運動</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <span class="nav-label">設定</span>
+        </a>
+    </nav>
+</body>
+</html>

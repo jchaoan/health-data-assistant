@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料設定 - 營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            margin: 20px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 步驟指示器 */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.2);
+        }
+
+        .step-dot.completed {
+            background: #27ae60;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .required-mark {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .optional-mark {
+            color: #999;
+            font-size: 12px;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .gender-options,
+        .goal-options,
+        .frequency-options,
+        .experience-options,
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .option-card {
+            padding: 15px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .option-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .option-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .option-desc {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* 多選卡片樣式 */
+        .multi-select-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .multi-option {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .multi-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .multi-option.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+            color: #667eea;
+        }
+
+        .multi-option .option-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .multi-option .option-label {
+            font-size: 12px;
+        }
+
+        .calculated-values {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .calc-value {
+            color: #333;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-prev,
+        .btn-next,
+        .btn-submit {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-prev {
+            background: #e0e0e0;
+            color: #666;
+            border: none;
+        }
+
+        .btn-prev:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-next,
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-next:hover,
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-next:disabled,
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-skip {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #999;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-skip:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .info-box p {
+            color: #0277BD;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-box.optional {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+
+        .info-box.optional p {
+            color: #e65100;
+        }
+
+        .divider {
+            border-top: 2px dashed #e0e0e0;
+            margin: 30px 0;
+        }
+
+        /* 運動建議預覽 */
+        .exercise-preview {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .exercise-preview.show {
+            display: block;
+        }
+
+        .exercise-preview h4 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exercise-preview-content {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 480px) {
+            .setup-container {
+                padding: 25px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .gender-options,
+            .goal-options,
+            .frequency-options,
+            .experience-options,
+            .time-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .multi-select-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .setup-container {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .header h1 {
+            color: #667eea;
+        }
+
+        body.dark-mode .header p {
+            color: #888;
+        }
+
+        body.dark-mode .step-number {
+            background: #333;
+            color: #667eea;
+        }
+
+        body.dark-mode .step-title {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode label {
+            color: #ccc;
+        }
+
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="text"],
+        body.dark-mode select {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode input:focus,
+        body.dark-mode select:focus {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .option-card {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .option-card:hover {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .option-card.selected {
+            border-color: #667eea;
+            background: #333;
+        }
+
+        body.dark-mode .multi-option {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .multi-option:hover {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .multi-option.selected {
+            border-color: #667eea;
+            background: #333;
+        }
+
+        body.dark-mode .calculated-results {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .result-item {
+            background: #333;
+        }
+
+        body.dark-mode .result-label {
+            color: #aaa;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #444;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="header">
+            <h1><img src="logo.png" alt="Logo" class="header-logo">個人資料設定</h1>
+            <p>完善您的資料，獲得個人化營養與運動建議</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" id="step1Dot"></div>
+            <div class="step-dot" id="step2Dot"></div>
+            <div class="step-dot" id="step3Dot"></div>
+            <div class="step-dot" id="step4Dot"></div>
+        </div>
+
+        <form id="profileForm">
+            <!-- 第一步：基本資料 -->
+            <div class="form-section active" id="step1">
+                <h2 class="section-title">📋 基本資料</h2>
+                <p class="section-subtitle">這些資料將用於計算您的基礎代謝率和營養需求</p>
+
+                <div class="form-group">
+                    <label>性別 <span class="required-mark">*</span></label>
+                    <div class="gender-options">
+                        <div class="option-card" onclick="selectGender(true)">
+                            <div class="option-icon">👨</div>
+                            <div class="option-label">男性</div>
+                        </div>
+                        <div class="option-card" onclick="selectGender(false)">
+                            <div class="option-icon">👩</div>
+                            <div class="option-label">女性</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">年齡 <span class="required-mark">*</span></label>
+                        <input type="number" id="age" placeholder="例如：25" min="10" max="120" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">身高 (cm) <span class="required-mark">*</span></label>
+                        <input type="number" id="height" placeholder="例如：170" min="100" max="250" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">體重 (kg) <span class="required-mark">*</span></label>
+                        <input type="number" id="weight" placeholder="例如：65" min="20" max="300" step="0.1" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二步：健康目標 -->
+            <div class="form-section" id="step2">
+                <h2 class="section-title">🎯 健康目標</h2>
+                <p class="section-subtitle">選擇您的健康目標，系統將據此調整營養建議</p>
+
+                <div class="form-group">
+                    <label>您的目標 <span class="required-mark">*</span></label>
+                    <div class="goal-options">
+                        <div class="option-card" onclick="selectGoal(0)">
+                            <div class="option-icon">⚖️</div>
+                            <div class="option-label">維持體重</div>
+                            <div class="option-desc">保持健康</div>
+                        </div>
+                        <div class="option-card" onclick="selectGoal(1)">
+                            <div class="option-icon">📉</div>
+                            <div class="option-label">減重</div>
+                            <div class="option-desc">減少體脂</div>
+                        </div>
+                        <div class="option-card" onclick="selectGoal(2)">
+                            <div class="option-icon">💪</div>
+                            <div class="option-label">增肌</div>
+                            <div class="option-desc">增加肌肉</div>
+                        </div>
+                        <div class="option-card" onclick="selectGoal(3)">
+                            <div class="option-icon">❤️</div>
+                            <div class="option-label">改善健康</div>
+                            <div class="option-desc">慢性病管理</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="activityLevel">日常活動量 <span class="required-mark">*</span></label>
+                    <select id="activityLevel">
+                        <option value="sedentary">久坐 - 幾乎不運動，辦公室工作</option>
+                        <option value="lightly_active">輕度活動 - 偶爾走動，每週運動1-2次</option>
+                        <option value="moderately_active" selected>中度活動 - 每週運動3-5次</option>
+                        <option value="very_active">高度活動 - 每週運動6-7次，體力工作</option>
+                        <option value="extra_active">極高活動 - 每天高強度運動或勞動</option>
+                    </select>
+                </div>
+
+                <!-- 計算結果 -->
+                <div class="calculated-values" id="calculatedValues" style="display: none;">
+                    <h3 style="margin-bottom: 15px; color: #333;">📊 您的營養計算結果</h3>
+                    <div class="calc-row">
+                        <span class="calc-label">BMI 指數</span>
+                        <span class="calc-value" id="bmiValue">-</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="calc-label">基礎代謝率 (BMR)</span>
+                        <span class="calc-value" id="bmrValue">-</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="calc-label">每日總消耗 (TDEE)</span>
+                        <span class="calc-value" id="tdeeValue">-</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="calc-label">建議熱量攝取</span>
+                        <span class="calc-value" id="suggestedCalories">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第三步：運動習慣（選填）-->
+            <div class="form-section" id="step3">
+                <h2 class="section-title">🏃 運動習慣</h2>
+                <div class="info-box optional">
+                    <p>💡 以下為選填項目。填寫後系統可為您生成個人化的運動建議，幫助您更有效達成健康目標。</p>
+                </div>
+
+                <div class="form-group">
+                    <label>目前運動頻率 <span class="optional-mark">(選填)</span></label>
+                    <div class="frequency-options">
+                        <div class="option-card" onclick="selectFrequency(0)">
+                            <div class="option-icon">🛋️</div>
+                            <div class="option-label">幾乎不運動</div>
+                        </div>
+                        <div class="option-card" onclick="selectFrequency(1)">
+                            <div class="option-icon">🚶</div>
+                            <div class="option-label">每週1-2次</div>
+                        </div>
+                        <div class="option-card" onclick="selectFrequency(2)">
+                            <div class="option-icon">🏃</div>
+                            <div class="option-label">每週3-4次</div>
+                        </div>
+                        <div class="option-card" onclick="selectFrequency(3)">
+                            <div class="option-icon">🏋️</div>
+                            <div class="option-label">每週5次以上</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>運動經驗程度 <span class="optional-mark">(選填)</span></label>
+                    <div class="experience-options">
+                        <div class="option-card" onclick="selectExperience(0)">
+                            <div class="option-icon">🌱</div>
+                            <div class="option-label">新手</div>
+                            <div class="option-desc">剛開始運動</div>
+                        </div>
+                        <div class="option-card" onclick="selectExperience(1)">
+                            <div class="option-icon">🌿</div>
+                            <div class="option-label">初學者</div>
+                            <div class="option-desc">有些基礎</div>
+                        </div>
+                        <div class="option-card" onclick="selectExperience(2)">
+                            <div class="option-icon">🌳</div>
+                            <div class="option-label">中級者</div>
+                            <div class="option-desc">規律運動中</div>
+                        </div>
+                        <div class="option-card" onclick="selectExperience(3)">
+                            <div class="option-icon">🏆</div>
+                            <div class="option-label">進階者</div>
+                            <div class="option-desc">運動愛好者</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>每次可運動時間 <span class="optional-mark">(選填)</span></label>
+                    <div class="time-options">
+                        <div class="option-card" onclick="selectTime(0)">
+                            <div class="option-icon">⏱️</div>
+                            <div class="option-label">15-30 分鐘</div>
+                        </div>
+                        <div class="option-card" onclick="selectTime(1)">
+                            <div class="option-icon">⏰</div>
+                            <div class="option-label">30-60 分鐘</div>
+                        </div>
+                        <div class="option-card" onclick="selectTime(2)">
+                            <div class="option-icon">🕐</div>
+                            <div class="option-label">60-90 分鐘</div>
+                        </div>
+                        <div class="option-card" onclick="selectTime(3)">
+                            <div class="option-icon">🕑</div>
+                            <div class="option-label">90 分鐘以上</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第四步：運動偏好與限制（選填）-->
+            <div class="form-section" id="step4">
+                <h2 class="section-title">⚙️ 運動偏好與限制</h2>
+                <p class="section-subtitle">選擇您喜歡的運動類型和身體限制，讓建議更精準</p>
+
+                <div class="form-group">
+                    <label>偏好運動類型 <span class="optional-mark">(可複選)</span></label>
+                    <div class="multi-select-grid">
+                        <div class="multi-option" onclick="toggleExerciseType('cardio')">
+                            <div class="option-icon">🏃</div>
+                            <div class="option-label">有氧運動</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('strength')">
+                            <div class="option-icon">🏋️</div>
+                            <div class="option-label">重量訓練</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('hiit')">
+                            <div class="option-icon">⚡</div>
+                            <div class="option-label">HIIT 間歇</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('yoga')">
+                            <div class="option-icon">🧘</div>
+                            <div class="option-label">瑜伽伸展</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('swimming')">
+                            <div class="option-icon">🏊</div>
+                            <div class="option-label">游泳</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('cycling')">
+                            <div class="option-icon">🚴</div>
+                            <div class="option-label">騎車</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('ball')">
+                            <div class="option-icon">⚽</div>
+                            <div class="option-label">球類運動</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('outdoor')">
+                            <div class="option-icon">🥾</div>
+                            <div class="option-label">戶外活動</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('home')">
+                            <div class="option-icon">🏠</div>
+                            <div class="option-label">居家運動</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleExerciseType('dance')">
+                            <div class="option-icon">💃</div>
+                            <div class="option-label">舞蹈有氧</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label>可使用器材 <span class="optional-mark">(可複選)</span></label>
+                    <div class="multi-select-grid">
+                        <div class="multi-option" onclick="toggleEquipment('none')">
+                            <div class="option-icon">🤸</div>
+                            <div class="option-label">無器材</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('dumbbell')">
+                            <div class="option-icon">🏋️</div>
+                            <div class="option-label">啞鈴</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('barbell')">
+                            <div class="option-icon">🏋️‍♂️</div>
+                            <div class="option-label">槓鈴</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('band')">
+                            <div class="option-icon">🎗️</div>
+                            <div class="option-label">彈力帶</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('kettlebell')">
+                            <div class="option-icon">🔔</div>
+                            <div class="option-label">壺鈴</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('treadmill')">
+                            <div class="option-icon">🏃‍♂️</div>
+                            <div class="option-label">跑步機</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('bike')">
+                            <div class="option-icon">🚲</div>
+                            <div class="option-label">飛輪/健身車</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleEquipment('gym')">
+                            <div class="option-icon">🏢</div>
+                            <div class="option-label">健身房器材</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label>身體狀況限制 <span class="optional-mark">(可複選，若無可不選)</span></label>
+                    <div class="multi-select-grid">
+                        <div class="multi-option" onclick="toggleLimitation('knee')">
+                            <div class="option-icon">🦵</div>
+                            <div class="option-label">膝蓋不適</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('back')">
+                            <div class="option-icon">🔙</div>
+                            <div class="option-label">腰背問題</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('shoulder')">
+                            <div class="option-icon">💪</div>
+                            <div class="option-label">肩頸問題</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('heart')">
+                            <div class="option-icon">❤️</div>
+                            <div class="option-label">心血管疾病</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('joint')">
+                            <div class="option-icon">🦴</div>
+                            <div class="option-label">關節炎</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('pregnancy')">
+                            <div class="option-icon">🤰</div>
+                            <div class="option-label">懷孕/產後</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('elderly')">
+                            <div class="option-icon">👴</div>
+                            <div class="option-label">年長者</div>
+                        </div>
+                        <div class="multi-option" onclick="toggleLimitation('obesity')">
+                            <div class="option-icon">⚖️</div>
+                            <div class="option-label">體重過重</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="otherNotes">其他備註 <span class="optional-mark">(選填)</span></label>
+                    <textarea id="otherNotes" placeholder="例如：有舊傷、特殊需求、過敏等..."></textarea>
+                </div>
+
+                <!-- 運動建議預覽 -->
+                <div class="exercise-preview" id="exercisePreview">
+                    <h4>🎯 運動建議預覽</h4>
+                    <div class="exercise-preview-content" id="exercisePreviewContent">
+                        根據您填寫的資料，系統將為您生成個人化運動建議...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 按鈕區 -->
+            <div class="btn-container">
+                <button type="button" class="btn-prev" id="btnPrev" onclick="prevStep()" style="display: none;">
+                    上一步
+                </button>
+                <button type="button" class="btn-next" id="btnNext" onclick="nextStep()">
+                    下一步
+                </button>
+                <button type="submit" class="btn-submit" id="btnSubmit" style="display: none;">
+                    完成設定
+                </button>
+            </div>
+
+            <button type="button" class="btn-skip" onclick="skipSetup()">
+                暫時跳過，稍後再設定
+            </button>
+        </form>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 全域變數
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // 必填欄位
+        let selectedGender = null;
+        let selectedGoal = null;
+
+        // 選填欄位（運動相關）
+        let selectedFrequency = null;
+        let selectedExperience = null;
+        let selectedTime = null;
+        let selectedExerciseTypes = [];
+        let selectedEquipment = [];
+        let selectedLimitations = [];
+
+        // 步驟控制
+        function updateStepUI() {
+            // 更新表單區塊顯示
+            for (let i = 1; i <= totalSteps; i++) {
+                const section = document.getElementById('step' + i);
+                const dot = document.getElementById('step' + i + 'Dot');
+
+                if (i === currentStep) {
+                    section.classList.add('active');
+                    dot.classList.add('active');
+                    dot.classList.remove('completed');
+                } else if (i < currentStep) {
+                    section.classList.remove('active');
+                    dot.classList.remove('active');
+                    dot.classList.add('completed');
+                } else {
+                    section.classList.remove('active');
+                    dot.classList.remove('active');
+                    dot.classList.remove('completed');
+                }
+            }
+
+            // 更新按鈕顯示
+            document.getElementById('btnPrev').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('btnNext').style.display = currentStep < totalSteps ? 'block' : 'none';
+            document.getElementById('btnSubmit').style.display = currentStep === totalSteps ? 'block' : 'none';
+
+            // 更新進度條
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // 第四步時更新運動建議預覽
+            if (currentStep === 4) {
+                updateExercisePreview();
+            }
+        }
+
+        function nextStep() {
+            // 驗證必填欄位
+            if (currentStep === 1) {
+                if (selectedGender === null) {
+                    alert('請選擇性別');
+                    return;
+                }
+                if (!document.getElementById('age').value) {
+                    alert('請填寫年齡');
+                    return;
+                }
+                if (!document.getElementById('height').value) {
+                    alert('請填寫身高');
+                    return;
+                }
+                if (!document.getElementById('weight').value) {
+                    alert('請填寫體重');
+                    return;
+                }
+            }
+
+            if (currentStep === 2) {
+                if (selectedGoal === null) {
+                    alert('請選擇健康目標');
+                    return;
+                }
+                updateCalculations();
+            }
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStepUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 選擇性別
+        function selectGender(isMale) {
+            selectedGender = isMale;
+            const cards = document.querySelectorAll('.gender-options .option-card');
+            cards.forEach((card, index) => {
+                if ((isMale && index === 0) || (!isMale && index === 1)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        // 選擇目標
+        function selectGoal(goal) {
+            selectedGoal = goal;
+            const cards = document.querySelectorAll('.goal-options .option-card');
+            cards.forEach((card, index) => {
+                card.classList.toggle('selected', index === goal);
+            });
+            updateCalculations();
+        }
+
+        // 選擇運動頻率
+        function selectFrequency(freq) {
+            selectedFrequency = freq;
+            const cards = document.querySelectorAll('.frequency-options .option-card');
+            cards.forEach((card, index) => {
+                card.classList.toggle('selected', index === freq);
+            });
+        }
+
+        // 選擇運動經驗
+        function selectExperience(exp) {
+            selectedExperience = exp;
+            const cards = document.querySelectorAll('.experience-options .option-card');
+            cards.forEach((card, index) => {
+                card.classList.toggle('selected', index === exp);
+            });
+        }
+
+        // 選擇運動時間
+        function selectTime(time) {
+            selectedTime = time;
+            const cards = document.querySelectorAll('.time-options .option-card');
+            cards.forEach((card, index) => {
+                card.classList.toggle('selected', index === time);
+            });
+        }
+
+        // 切換運動類型（多選）
+        function toggleExerciseType(type) {
+            const index = selectedExerciseTypes.indexOf(type);
+            if (index > -1) {
+                selectedExerciseTypes.splice(index, 1);
+            } else {
+                selectedExerciseTypes.push(type);
+            }
+            updateMultiSelectUI('.form-group:has([onclick*="toggleExerciseType"]) .multi-option', selectedExerciseTypes, 'toggleExerciseType');
+        }
+
+        // 切換器材（多選）
+        function toggleEquipment(equip) {
+            const index = selectedEquipment.indexOf(equip);
+            if (index > -1) {
+                selectedEquipment.splice(index, 1);
+            } else {
+                selectedEquipment.push(equip);
+            }
+            updateMultiSelectUI('.form-group:has([onclick*="toggleEquipment"]) .multi-option', selectedEquipment, 'toggleEquipment');
+        }
+
+        // 切換身體限制（多選）
+        function toggleLimitation(limit) {
+            const index = selectedLimitations.indexOf(limit);
+            if (index > -1) {
+                selectedLimitations.splice(index, 1);
+            } else {
+                selectedLimitations.push(limit);
+            }
+            updateMultiSelectUI('.form-group:has([onclick*="toggleLimitation"]) .multi-option', selectedLimitations, 'toggleLimitation');
+        }
+
+        // 更新多選 UI
+        function updateMultiSelectUI(selector, selectedArray, funcName) {
+            const allOptions = document.querySelectorAll('.multi-option');
+            allOptions.forEach(option => {
+                const onclick = option.getAttribute('onclick');
+                if (onclick && onclick.includes(funcName)) {
+                    const match = onclick.match(/'([^']+)'/);
+                    if (match) {
+                        const value = match[1];
+                        option.classList.toggle('selected', selectedArray.includes(value));
+                    }
+                }
+            });
+        }
+
+        // 計算 BMR
+        function calculateBMR(age, height, weight, isMale) {
+            if (isMale) {
+                return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+        }
+
+        // 計算 TDEE
+        function calculateTDEE(bmr, activityLevel) {
+            const multipliers = {
+                'sedentary': 1.2,
+                'lightly_active': 1.375,
+                'moderately_active': 1.55,
+                'very_active': 1.725,
+                'extra_active': 1.9
+            };
+            return bmr * (multipliers[activityLevel] || 1.55);
+        }
+
+        // 計算建議熱量
+        function calculateSuggestedCalories(tdee, goal) {
+            let suggested;
+            switch(goal) {
+                case 1: // 減重
+                    suggested = tdee - 500;
+                    break;
+                case 2: // 增肌
+                    suggested = tdee + 300;
+                    break;
+                case 3: // 改善健康
+                    suggested = tdee - 200;
+                    break;
+                default: // 維持
+                    suggested = tdee;
+            }
+            return Math.max(suggested, 1200);
+        }
+
+        // 更新計算結果
+        function updateCalculations() {
+            const age = parseInt(document.getElementById('age').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const activityLevel = document.getElementById('activityLevel').value;
+
+            if (!age || !height || !weight || selectedGender === null || selectedGoal === null) {
+                document.getElementById('calculatedValues').style.display = 'none';
+                return;
+            }
+
+            const bmi = weight / Math.pow(height / 100, 2);
+            const bmr = calculateBMR(age, height, weight, selectedGender);
+            const tdee = calculateTDEE(bmr, activityLevel);
+            const suggestedCalories = calculateSuggestedCalories(tdee, selectedGoal);
+
+            // BMI 評估
+            let bmiStatus = '';
+            if (bmi < 18.5) bmiStatus = '(過輕)';
+            else if (bmi < 24) bmiStatus = '(正常)';
+            else if (bmi < 27) bmiStatus = '(過重)';
+            else bmiStatus = '(肥胖)';
+
+            document.getElementById('calculatedValues').style.display = 'block';
+            document.getElementById('bmiValue').textContent = bmi.toFixed(1) + ' ' + bmiStatus;
+            document.getElementById('bmrValue').textContent = Math.round(bmr) + ' 大卡';
+            document.getElementById('tdeeValue').textContent = Math.round(tdee) + ' 大卡';
+            document.getElementById('suggestedCalories').textContent = Math.round(suggestedCalories) + ' 大卡';
+        }
+
+        // 更新運動建議預覽
+        function updateExercisePreview() {
+            const preview = document.getElementById('exercisePreview');
+            const content = document.getElementById('exercisePreviewContent');
+
+            // 檢查是否有填寫運動相關資料
+            const hasExerciseData = selectedFrequency !== null ||
+                                     selectedExperience !== null ||
+                                     selectedTime !== null ||
+                                     selectedExerciseTypes.length > 0;
+
+            if (!hasExerciseData) {
+                preview.classList.remove('show');
+                return;
+            }
+
+            preview.classList.add('show');
+
+            // 生成簡單的預覽文字
+            let previewText = '根據您的資料，系統將推薦：\n\n';
+
+            // 頻率建議
+            const freqLabels = ['建議從每週1-2次開始', '可維持目前頻率或增加至每週3次', '很好的運動習慣，建議維持', '注意適當休息與恢復'];
+            if (selectedFrequency !== null) {
+                previewText += '• ' + freqLabels[selectedFrequency] + '\n';
+            }
+
+            // 時間建議
+            const timeLabels = ['短時間高效訓練', '標準訓練時長', '充足的訓練時間', '可安排完整訓練計畫'];
+            if (selectedTime !== null) {
+                previewText += '• ' + timeLabels[selectedTime] + '\n';
+            }
+
+            // 運動類型
+            if (selectedExerciseTypes.length > 0) {
+                const typeNames = {
+                    'cardio': '有氧', 'strength': '重訓', 'hiit': 'HIIT',
+                    'yoga': '瑜伽', 'swimming': '游泳', 'cycling': '騎車',
+                    'ball': '球類', 'outdoor': '戶外', 'home': '居家', 'dance': '舞蹈'
+                };
+                const types = selectedExerciseTypes.map(t => typeNames[t]).join('、');
+                previewText += '• 偏好運動：' + types + '\n';
+            }
+
+            // 身體限制
+            if (selectedLimitations.length > 0) {
+                previewText += '• 將避免可能造成負擔的動作\n';
+            }
+
+            previewText += '\n完成設定後，可在主頁查看完整的個人化運動建議。';
+
+            content.textContent = previewText;
+        }
+
+        // 表單提交
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('btnSubmit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '儲存中...';
+
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('請先登入');
+                }
+
+                const age = parseInt(document.getElementById('age').value);
+                const height = parseFloat(document.getElementById('height').value);
+                const weight = parseFloat(document.getElementById('weight').value);
+                const activityLevel = document.getElementById('activityLevel').value;
+                const otherNotes = document.getElementById('otherNotes').value.trim();
+
+                // 計算數值
+                const bmi = weight / Math.pow(height / 100, 2);
+                const bmr = calculateBMR(age, height, weight, selectedGender);
+                const tdee = calculateTDEE(bmr, activityLevel);
+                const suggestedCalories = calculateSuggestedCalories(tdee, selectedGoal);
+                const targetProtein = (suggestedCalories * 0.3) / 4;
+                const targetCarbs = (suggestedCalories * 0.45) / 4;
+                const targetFat = (suggestedCalories * 0.25) / 9;
+
+                // 組合資料
+                const profileData = {
+                    // 基本資料（必填）
+                    age: age,
+                    gender: selectedGender,
+                    height: height,
+                    weight: weight,
+                    goal: selectedGoal,
+                    activityLevel: activityLevel,
+
+                    // 計算數值
+                    BMI: parseFloat(bmi.toFixed(1)),
+                    BMR: Math.round(bmr),
+                    TDEE_level: Math.round(tdee),
+                    suggested_calories: Math.round(suggestedCalories),
+
+                    // 營養目標
+                    targetCalories: Math.round(suggestedCalories),
+                    targetProtein: Math.round(targetProtein),
+                    targetCarbs: Math.round(targetCarbs),
+                    targetFat: Math.round(targetFat),
+
+                    // 運動相關（選填）
+                    exerciseFrequency: selectedFrequency,
+                    exerciseExperience: selectedExperience,
+                    exerciseTimePerSession: selectedTime,
+                    preferredExerciseTypes: selectedExerciseTypes,
+                    availableEquipment: selectedEquipment,
+                    physicalLimitations: selectedLimitations,
+                    otherNotes: otherNotes,
+
+                    // 標記是否有填寫運動資料
+                    hasExerciseProfile: selectedFrequency !== null ||
+                                        selectedExperience !== null ||
+                                        selectedTime !== null ||
+                                        selectedExerciseTypes.length > 0,
+
+                    // 時間戳記
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // 儲存到 Firestore
+                await db.collection('member').doc(user.uid).set(profileData, { merge: true });
+
+                console.log('[OK] 個人資料儲存成功');
+                alert('個人資料設定完成！');
+
+                // 跳轉到首頁
+                window.location.href = 'dashboard.html';
+
+            } catch (error) {
+                console.error('[ERROR] 儲存失敗:', error);
+                alert('儲存失敗：' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '完成設定';
+            }
+        });
+
+        // 跳過設定
+        function skipSetup() {
+            if (confirm('確定要跳過個人資料設定嗎？\n\n部分功能需要完整資料才能使用。')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStepUI();
+
+            // 監聽輸入變化更新計算
+            ['age', 'height', 'weight'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateCalculations);
+            });
+            document.getElementById('activityLevel').addEventListener('change', updateCalculations);
+        });
+
+        // 檢查登入狀態
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                alert('請先登入');
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - 營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .site-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .logo:hover::after {
+            content: '📷';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.5);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .divider-text {
+            background: white;
+            padding: 0 15px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .btn-google {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #555;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-google:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .password-strength {
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .strength-weak {
+            color: #e74c3c;
+        }
+
+        .strength-medium {
+            color: #f39c12;
+        }
+
+        .strength-strong {
+            color: #27ae60;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .logo {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .register-container {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode h1 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .subtitle {
+            color: #888;
+        }
+
+        body.dark-mode label {
+            color: #ccc;
+        }
+
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="password"] {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode input:focus {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .btn-google {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .btn-google:hover {
+            border-color: #667eea;
+            background: #333;
+        }
+
+        body.dark-mode .divider::before,
+        body.dark-mode .divider::after {
+            background: #444;
+        }
+
+        body.dark-mode .divider-text {
+            background: #1e1e1e;
+            color: #888;
+        }
+
+        body.dark-mode .login-link {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <img src="logo.png" alt="健康數據助理 Logo" class="site-logo">
+        <div class="logo-container">
+            <div class="logo" id="profilePhotoContainer" onclick="selectProfilePhoto()">
+                <span id="defaultIcon">👤</span>
+                <img id="profilePhoto" style="display: none;">
+            </div>
+            <h1>建立新帳號</h1>
+            <p class="subtitle">請填寫以下資訊來建立您的帳號</p>
+        </div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">帳號</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="請輸入您的帳號"
+                        required
+                    >
+                </div>
+                <div class="error-message" id="usernameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📧</span>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="請輸入您的 Email"
+                        required
+                    >
+                </div>
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密碼</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="請輸入您的密碼（至少6個字元）"
+                        required
+                    >
+                    <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                        👁️
+                    </button>
+                </div>
+                <div class="password-strength" id="passwordStrength"></div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">確認密碼</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="請再次輸入您的密碼"
+                        required
+                    >
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                        👁️
+                    </button>
+                </div>
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+
+            <button type="submit" class="btn-register" id="registerBtn">
+                註冊
+            </button>
+        </form>
+
+        <div class="divider">
+            <span class="divider-text">或</span>
+        </div>
+
+        <button class="btn-google" onclick="registerWithGoogle()">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            使用 Google 帳號註冊
+        </button>
+
+        <div class="login-link">
+            已經有帳號了？ <a href="login.html">立即登入</a>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>⏳ 註冊中...</p>
+        </div>
+    </div>
+
+    <!-- 隱藏的檔案上傳輸入框 -->
+    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(event)">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 檢查用戶是否已完成個人資料設定
+        async function checkUserProfileExists(userId) {
+            try {
+                const memberDoc = await db.collection('member').doc(userId).get();
+                return memberDoc.exists && memberDoc.data().height && memberDoc.data().weight;
+            } catch (error) {
+                console.error('[ERROR] 檢查用戶資料失敗:', error);
+                return false;
+            }
+        }
+
+        // 根據用戶資料狀態決定跳轉頁面
+        async function redirectAfterAuth(user, isNewUser = false) {
+            // 如果是新用戶（Email 註冊），直接到個人資料設定頁面
+            if (isNewUser) {
+                console.log('[INFO] 新用戶，跳轉到設定頁面');
+                window.location.href = 'profile_setup.html';
+                return;
+            }
+
+            // Google 登入可能是新用戶也可能是舊用戶，檢查資料庫
+            const hasProfile = await checkUserProfileExists(user.uid);
+            if (hasProfile) {
+                console.log('[OK] 用戶已有個人資料，跳轉到主頁');
+                window.location.href = 'index.html';
+            } else {
+                console.log('[INFO] 用戶尚未設定個人資料，跳轉到設定頁面');
+                window.location.href = 'profile_setup.html';
+            }
+        }
+
+        let selectedPhotoFile = null;
+
+        // 選擇大頭照
+        function selectProfilePhoto() {
+            document.getElementById('photoInput').click();
+        }
+
+        // 處理照片選擇
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // 檢查檔案大小（限制 5MB）
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('照片檔案太大，請選擇小於 5MB 的圖片');
+                    return;
+                }
+
+                // 檢查檔案類型
+                if (!file.type.startsWith('image/')) {
+                    alert('請選擇圖片檔案');
+                    return;
+                }
+
+                selectedPhotoFile = file;
+
+                // 預覽照片
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoImg = document.getElementById('profilePhoto');
+                    const defaultIcon = document.getElementById('defaultIcon');
+
+                    photoImg.src = e.target.result;
+                    photoImg.style.display = 'block';
+                    defaultIcon.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 密碼顯示/隱藏切換
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleBtn = event.currentTarget;
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+
+        // 密碼強度檢查
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+
+            if (password.length === 0) {
+                strengthDiv.textContent = '';
+                return;
+            }
+
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+            if (strength <= 2) {
+                strengthDiv.textContent = '密碼強度：弱 ⚠️';
+                strengthDiv.className = 'password-strength strength-weak';
+            } else if (strength <= 3) {
+                strengthDiv.textContent = '密碼強度：中等 ⚡';
+                strengthDiv.className = 'password-strength strength-medium';
+            } else {
+                strengthDiv.textContent = '密碼強度：強 ✅';
+                strengthDiv.className = 'password-strength strength-strong';
+            }
+        });
+
+        // 表單驗證
+        function validateForm() {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            let isValid = true;
+
+            // 清除先前的錯誤訊息
+            document.getElementById('usernameError').classList.remove('show');
+            document.getElementById('emailError').classList.remove('show');
+            document.getElementById('passwordError').classList.remove('show');
+            document.getElementById('confirmPasswordError').classList.remove('show');
+
+            // 帳號驗證
+            if (!username) {
+                document.getElementById('usernameError').textContent = '請輸入帳號';
+                document.getElementById('usernameError').classList.add('show');
+                isValid = false;
+            } else if (username.length < 3) {
+                document.getElementById('usernameError').textContent = '帳號至少需要3個字元';
+                document.getElementById('usernameError').classList.add('show');
+                isValid = false;
+            } else if (username.length > 20) {
+                document.getElementById('usernameError').textContent = '帳號不能超過20個字元';
+                document.getElementById('usernameError').classList.add('show');
+                isValid = false;
+            }
+
+            // Email 驗證
+            if (!email) {
+                document.getElementById('emailError').textContent = '請輸入 Email';
+                document.getElementById('emailError').classList.add('show');
+                isValid = false;
+            } else if (!email.includes('@') || !email.includes('.')) {
+                document.getElementById('emailError').textContent = '請輸入有效的 Email 格式';
+                document.getElementById('emailError').classList.add('show');
+                isValid = false;
+            }
+
+            // 密碼驗證
+            if (!password) {
+                document.getElementById('passwordError').textContent = '請輸入密碼';
+                document.getElementById('passwordError').classList.add('show');
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('passwordError').textContent = '密碼至少需要 6 個字元';
+                document.getElementById('passwordError').classList.add('show');
+                isValid = false;
+            } else if (password.length > 20) {
+                document.getElementById('passwordError').textContent = '密碼不能超過 20 個字元';
+                document.getElementById('passwordError').classList.add('show');
+                isValid = false;
+            }
+
+            // 確認密碼驗證
+            if (!confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = '請確認密碼';
+                document.getElementById('confirmPasswordError').classList.add('show');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = '密碼不一致，請重新輸入';
+                document.getElementById('confirmPasswordError').classList.add('show');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Email/密碼註冊（含信箱驗證）
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const registerBtn = document.getElementById('registerBtn');
+            const loading = document.getElementById('loading');
+
+            try {
+                registerBtn.disabled = true;
+                loading.classList.add('show');
+
+                // 使用 Firebase 建立帳號
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                console.log('[OK] 註冊成功:', userCredential.user.email);
+
+                // 更新使用者顯示名稱
+                await userCredential.user.updateProfile({
+                    displayName: username
+                });
+
+                // 發送信箱驗證郵件
+                await userCredential.user.sendEmailVerification({
+                    url: window.location.origin + '/login.html', // 驗證後導向登入頁
+                    handleCodeInApp: false
+                });
+                console.log('[OK] 驗證郵件已發送');
+
+                // TODO: 上傳大頭照到 Firebase Storage（如果有選擇）
+                if (selectedPhotoFile) {
+                    console.log('[INFO] 已選擇大頭照，將來可上傳到 Firebase Storage');
+                }
+
+                // 登出用戶（需要先驗證信箱才能使用）
+                await auth.signOut();
+
+                // 導向驗證提示頁面
+                window.location.href = 'verify-email.html?email=' + encodeURIComponent(email);
+
+            } catch (error) {
+                console.error('[ERROR] 註冊失敗:', error);
+
+                let errorMessage = '註冊失敗，請稍後再試';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = '此 Email 已被註冊，請使用其他 Email 或直接登入';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '無效的 Email 格式';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = '密碼強度不足，請使用更複雜的密碼';
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMessage = '網路連線失敗，請檢查您的網路連線';
+                }
+
+                document.getElementById('emailError').textContent = errorMessage;
+                document.getElementById('emailError').classList.add('show');
+
+            } finally {
+                registerBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        });
+
+        // Google 註冊
+        async function registerWithGoogle() {
+            try {
+                const loading = document.getElementById('loading');
+                loading.classList.add('show');
+
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+
+                console.log('[OK] Google 註冊成功:', result.user.email);
+
+                // Google 登入可能是新用戶或舊用戶，檢查資料庫決定跳轉
+                await redirectAfterAuth(result.user, false);
+
+            } catch (error) {
+                console.error('[ERROR] Google 註冊失敗:', error);
+
+                let errorMessage = 'Google 註冊失敗，請稍後再試';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = '註冊視窗已關閉';
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMessage = '註冊已取消';
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMessage = '此 Email 已使用其他方式註冊，請直接登入';
+                }
+
+                alert(errorMessage);
+
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // 檢查是否已登入（不自動跳轉，讓用戶可以選擇）
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('[INFO] 用戶已登入:', user.email);
+                // 可選：顯示提示訊息
+                // alert('您已經登入了！');
+            }
+        });
+    </script>
+</body>
+</html>
