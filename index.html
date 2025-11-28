@@ -1,11 +1,792 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-    <meta http-equiv="refresh" content="0; url=/welcome">
-    <title>健康數據助理</title>
-    <script>window.location.href = '/welcome';</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康數據助理 - AI 智慧營養追蹤系統</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <!-- PWA 安裝提示 -->
+    <script src="/js/pwa-install.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 導航列 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo-icon {
+            font-size: 30px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-login-nav {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-login-nav:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-register-nav {
+            background: white;
+            border: 2px solid white;
+            color: #667eea;
+        }
+
+        .btn-register-nav:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Hero 區塊 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 20px 60px;
+            color: white;
+        }
+
+        .hero-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 22px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-hero {
+            padding: 18px 45px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-start {
+            background: white;
+            color: #667eea;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .btn-demo {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-demo:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        .scroll-indicator span {
+            font-size: 30px;
+            color: white;
+            opacity: 0.7;
+        }
+
+        /* 功能介紹區塊 */
+        .features {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #f8f9ff;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #667eea;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 使用流程區塊 */
+        .how-it-works {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+            padding: 80px 20px;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .step-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .step h4 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .step-arrow {
+            display: none;
+            font-size: 30px;
+            color: #667eea;
+            align-self: center;
+        }
+
+        @media (min-width: 768px) {
+            .step-arrow {
+                display: block;
+            }
+        }
+
+        /* 技術特色區塊 */
+        .tech-section {
+            background: #1a1a2e;
+            color: white;
+            padding: 80px 20px;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .tech-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .tech-item h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .tech-item p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* CTA 區塊 */
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .btn-cta {
+            padding: 18px 50px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+
+            .btn-nav {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .hero-icon {
+                font-size: 70px;
+            }
+
+            .btn-hero {
+                padding: 14px 30px;
+                font-size: 16px;
+            }
+
+            .section-title h2 {
+                font-size: 28px;
+            }
+
+            .feature-card {
+                padding: 30px 20px;
+            }
+
+            .steps-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .step {
+                max-width: 100%;
+            }
+        }
+
+        /* 滾動動畫 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background: #121212;
+        }
+
+        body.dark-mode .navbar {
+            background: rgba(18, 18, 18, 0.95);
+        }
+
+        body.dark-mode .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .section-title {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .section-subtitle {
+            color: #888;
+        }
+
+        body.dark-mode .features {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .feature-card {
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .feature-card h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .feature-card p {
+            color: #888;
+        }
+
+        body.dark-mode .how-it-works {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode .step {
+            background: rgba(255,255,255,0.05);
+        }
+
+        body.dark-mode .step h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .step p {
+            color: #aaa;
+        }
+
+        body.dark-mode .cta {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode footer {
+            background: #0a0a0a;
+        }
+
+        body.dark-mode footer p {
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-    <p>正在跳轉...</p>
+    <!-- 導航列 -->
+    <nav class="navbar">
+        <div class="logo-text">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            健康數據助理
+        </div>
+        <div class="nav-buttons">
+            <a href="install.html" class="btn-nav btn-login-nav">📲 安裝App</a>
+            <a href="login.html" class="btn-nav btn-login-nav">登入</a>
+            <a href="register.html" class="btn-nav btn-register-nav">免費註冊</a>
+        </div>
+    </nav>
+
+    <!-- Hero 區塊 -->
+    <section class="hero">
+        <div class="hero-icon">📸</div>
+        <h1>拍照即知營養</h1>
+        <p class="hero-subtitle">
+            結合 AI 影像辨識與專業營養分析，<br>
+            讓您輕鬆掌握每一餐的營養攝取
+        </p>
+        <div class="hero-buttons">
+            <a href="register.html" class="btn-hero btn-start">
+                立即開始使用
+            </a>
+            <a href="#features" class="btn-hero btn-demo">
+                了解更多
+            </a>
+        </div>
+        <div class="scroll-indicator" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">
+            <span>▼</span>
+        </div>
+    </section>
+
+    <!-- 功能介紹 -->
+    <section class="features" id="features">
+        <div class="section-title fade-in">
+            <h2>強大功能，一手掌握</h2>
+            <p>整合最新 AI 技術，提供全方位營養追蹤服務</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔍</div>
+                <h3>智慧食物辨識</h3>
+                <p>採用 YOLOv8 深度學習模型，可辨識超過 25 種台灣常見食物，準確率高達 90% 以上</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🤖</div>
+                <h3>AI 營養分析</h3>
+                <p>結合 Google Gemini 多模態 AI，提供詳細的營養成分分析與個人化飲食建議</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💬</div>
+                <h3>智慧營養諮詢</h3>
+                <p>RAG 知識檢索系統搭配專業營養知識庫，隨時回答您的健康與飲食問題</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📊</div>
+                <h3>飲食記錄追蹤</h3>
+                <p>自動記錄每日飲食，生成營養攝取報表，幫助您達成健康目標</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">👥</div>
+                <h3>多人分析模式</h3>
+                <p>支援單人與多人分餐計算，無論個人用餐或家庭聚餐都能精確分析</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎯</div>
+                <h3>個人化目標</h3>
+                <p>根據您的健康目標（減重、增肌、維持）提供客製化的飲食建議</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用流程 -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="section-title fade-in">
+            <h2>簡單三步驟，開始健康生活</h2>
+            <p>輕鬆上手，讓 AI 成為您的私人營養師</p>
+        </div>
+        <div class="steps-container">
+            <div class="step fade-in">
+                <div class="step-number">1</div>
+                <div class="step-icon">📱</div>
+                <h4>拍攝餐點照片</h4>
+                <p>用手機拍下您的餐點，或上傳現有照片</p>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="step fade-in">
+                <div class="step-number">2</div>
+                <div class="step-icon">⚡</div>
+                <h4>AI 即時分析</h4>
+                <p>系統自動辨識食物並計算營養成分</p>
+            </div>
+            <span class="step-arrow">→</span>
+            <div class="step fade-in">
+                <div class="step-number">3</div>
+                <div class="step-icon">📈</div>
+                <h4>獲得專業建議</h4>
+                <p>收到個人化的營養分析與飲食建議</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技術特色 -->
+    <section class="tech-section">
+        <div class="section-title fade-in">
+            <h2 style="color: white;">先進技術，值得信賴</h2>
+            <p style="color: rgba(255,255,255,0.7);">採用業界領先的 AI 技術架構</p>
+        </div>
+        <div class="tech-grid">
+            <div class="tech-item fade-in">
+                <div class="tech-icon">🧠</div>
+                <h4>YOLOv8</h4>
+                <p>最新一代物件偵測模型<br>即時準確辨識食物</p>
+            </div>
+            <div class="tech-item fade-in">
+                <div class="tech-icon">✨</div>
+                <h4>Google Gemini</h4>
+                <p>多模態大型語言模型<br>深度理解食物營養</p>
+            </div>
+            <div class="tech-item fade-in">
+                <div class="tech-icon">📚</div>
+                <h4>RAG 知識檢索</h4>
+                <p>專業營養知識庫<br>提供可靠的健康資訊</p>
+            </div>
+            <div class="tech-item fade-in">
+                <div class="tech-icon">🔒</div>
+                <h4>Firebase 雲端</h4>
+                <p>安全的資料儲存<br>隨時隨地存取記錄</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA 區塊 -->
+    <section class="cta-section">
+        <h2 class="fade-in">準備好開始您的健康之旅了嗎？</h2>
+        <p class="fade-in">免費註冊，立即體驗 AI 智慧營養追蹤</p>
+        <a href="register.html" class="btn-cta fade-in">免費開始使用</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 健康數據助理 - AI 智慧營養追蹤系統 | Powered by YOLOv8 + Gemini + RAG</p>
+    </footer>
+
+    <!-- Firebase SDK for auth check -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 檢查用戶是否已完成個人資料設定
+        async function checkUserProfileExists(userId) {
+            try {
+                const memberDoc = await db.collection('member').doc(userId).get();
+                return memberDoc.exists && memberDoc.data().height && memberDoc.data().weight;
+            } catch (error) {
+                console.error('[ERROR] 檢查用戶資料失敗:', error);
+                return false;
+            }
+        }
+
+        // 檢查用戶登入狀態，更新 UI（不自動跳轉）
+        auth.onAuthStateChanged(async (user) => {
+            const navButtons = document.querySelector('.nav-buttons');
+            const ctaSection = document.querySelector('.cta-section');
+
+            if (user) {
+                console.log('[INFO] 用戶已登入:', user.email);
+                const hasProfile = await checkUserProfileExists(user.uid);
+
+                // 更新導航列按鈕
+                if (hasProfile) {
+                    navButtons.innerHTML = `
+                        <a href="index.html" class="btn-nav btn-register-nav">進入系統</a>
+                    `;
+                    // 更新底部 CTA
+                    ctaSection.innerHTML = `
+                        <h2 class="fade-in visible">歡迎回來！</h2>
+                        <p class="fade-in visible">您已登入，可以直接進入系統開始使用</p>
+                        <a href="index.html" class="btn-cta fade-in visible">進入系統</a>
+                    `;
+                } else {
+                    navButtons.innerHTML = `
+                        <a href="profile_setup.html" class="btn-nav btn-register-nav">完成資料設定</a>
+                    `;
+                    // 更新底部 CTA
+                    ctaSection.innerHTML = `
+                        <h2 class="fade-in visible">還差一步！</h2>
+                        <p class="fade-in visible">完成個人資料設定，即可開始使用完整功能</p>
+                        <a href="profile_setup.html" class="btn-cta fade-in visible">完成資料設定</a>
+                    `;
+                }
+            } else {
+                console.log('[INFO] 用戶未登入，顯示登入/註冊按鈕');
+                // 未登入用戶保持原本的登入/註冊按鈕
+            }
+        });
+
+        // 滾動動畫
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 平滑滾動
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

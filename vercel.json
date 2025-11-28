@@ -3,7 +3,7 @@
     { "src": "/", "dest": "/public/welcome.html" },
     { "src": "/welcome", "dest": "/public/welcome.html" },
     { "src": "/dashboard", "dest": "/public/dashboard.html" },
-    { "src": "/index", "dest": "/public/index.html" },
+    { "src": "/index", "dest": "/public/food-detect.html" },
     { "src": "/chat", "dest": "/public/chat.html" },
     { "src": "/diet-records", "dest": "/public/diet_records.html" },
     { "src": "/statistics", "dest": "/public/statistics.html" },
