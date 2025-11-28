@@ -1,6 +1,5 @@
 {
   "routes": [
-    { "handle": "filesystem" },
     { "src": "/", "dest": "/public/welcome.html" },
     { "src": "/welcome", "dest": "/public/welcome.html" },
     { "src": "/dashboard", "dest": "/public/dashboard.html" },
@@ -18,6 +17,8 @@
     { "src": "/exercise", "dest": "/public/exercise.html" },
     { "src": "/logo.png", "dest": "/public/logo.png" },
     { "src": "/manifest.json", "dest": "/public/manifest.json" },
-    { "src": "/service-worker.js", "dest": "/public/service-worker.js" }
+    { "src": "/service-worker.js", "dest": "/public/service-worker.js" },
+    { "src": "/js/(.*)", "dest": "/js/$1" },
+    { "src": "/public/(.*)", "dest": "/public/$1" }
   ]
 }
