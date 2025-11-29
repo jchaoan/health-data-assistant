@@ -302,15 +302,7 @@ body.dark-mode .skeleton {
 }
 
 /* ===== 網頁模式（非 PWA）調整 ===== */
-@media (display-mode: browser) {
-    /* 在瀏覽器模式下的樣式 */
-    .bottom-nav {
-        max-width: 600px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: 20px 20px 0 0;
-    }
-}
+/* 移除 max-width 限制，確保 7 個導航項目可以完整顯示 */
 
 /* ===== 減少動畫模式 ===== */
 @media (prefers-reduced-motion: reduce) {
