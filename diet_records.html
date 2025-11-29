@@ -442,30 +442,87 @@
         /* ===== 手機版 Modal 優化 ===== */
         @media (max-width: 480px) {
             .modal-overlay {
-                padding: 10px;
+                padding: 0;
                 align-items: flex-end;
             }
 
             .modal-container {
-                max-height: 85vh;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 90vh;
                 border-radius: 16px 16px 0 0;
+            }
+
+            .modal-header {
+                padding: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 16px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .modal-footer {
+                padding: 12px 15px;
             }
 
             .meal-type-selector {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .meal-type-btn {
+                padding: 8px 6px;
+                font-size: 11px;
+            }
+
+            .food-item-card {
+                padding: 12px;
+            }
+
+            .food-item-header input {
+                font-size: 14px;
+                padding: 10px;
             }
 
             .food-item-nutrients {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .nutrient-input-group label {
+                font-size: 10px;
+            }
+
+            .nutrient-input-group input {
+                padding: 8px 6px;
+                font-size: 13px;
             }
 
             .extra-nutrients.show {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .btn-add-food {
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .total-section {
+                padding: 12px;
             }
 
             .total-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
+            }
+
+            .total-value {
+                font-size: 18px;
             }
 
             .filter-bar {
@@ -905,21 +962,36 @@
             }
 
             .user-info {
-                gap: 8px;
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: center;
             }
 
             .user-avatar {
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
             }
 
             #userName {
-                font-size: 14px;
+                font-size: 13px;
+                width: 100%;
+                text-align: center;
+                margin-bottom: 5px;
             }
 
             .btn {
-                padding: 8px 12px;
-                font-size: 12px;
+                padding: 8px 10px;
+                font-size: 11px;
+                flex: 1;
+                min-width: 70px;
+                max-width: 100px;
+            }
+
+            .btn-add {
+                order: -1;
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 5px;
             }
 
             .record-card {
