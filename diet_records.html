@@ -114,27 +114,33 @@
         /* ===== 篩選列 ===== */
         .filter-bar {
             display: flex;
-            gap: 8px;
-            padding: 15px 20px;
+            gap: 10px;
+            padding: 12px 16px;
             background: white;
             border-radius: 12px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            display: none;
         }
 
         .filter-btn {
-            padding: 8px 16px;
+            padding: 10px 18px;
             border: 2px solid #e0e0e0;
             background: white;
-            border-radius: 20px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #666;
             transition: all 0.2s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .filter-btn:hover {
@@ -151,11 +157,11 @@
         /* ===== 餐點類型標籤 ===== */
         .meal-type-tag {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 5px 14px;
+            border-radius: 15px;
+            font-size: 13px;
             font-weight: 600;
-            margin-left: 10px;
+            margin-top: 8px;
         }
 
         .meal-type-tag.breakfast { background: #fff3e0; color: #e65100; }
@@ -451,6 +457,7 @@
                 max-width: 100% !important;
                 max-height: 90vh;
                 border-radius: 16px 16px 0 0;
+                overflow-x: hidden;
             }
 
             .modal-header {
@@ -463,6 +470,7 @@
 
             .modal-body {
                 padding: 15px;
+                overflow-x: hidden;
             }
 
             .modal-footer {
@@ -481,39 +489,58 @@
 
             .food-item-card {
                 padding: 12px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .food-item-header {
+                width: 100%;
             }
 
             .food-item-header input {
                 font-size: 14px;
                 padding: 10px;
+                width: 100%;
+                min-width: 0;
             }
 
             .food-item-nutrients {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .nutrient-input-group {
+                width: 100%;
             }
 
             .nutrient-input-group label {
-                font-size: 10px;
+                font-size: 11px;
             }
 
             .nutrient-input-group input {
-                padding: 8px 6px;
-                font-size: 13px;
+                padding: 10px 8px;
+                font-size: 14px;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .extra-nutrients.show {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
             }
 
             .btn-add-food {
-                padding: 10px;
+                padding: 12px;
                 font-size: 13px;
+                width: 100%;
             }
 
             .total-section {
                 padding: 12px;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .total-grid {
@@ -526,13 +553,15 @@
             }
 
             .filter-bar {
-                padding: 10px 15px;
-                gap: 6px;
+                padding: 10px 12px;
+                gap: 8px;
+                margin-bottom: 15px;
             }
 
             .filter-btn {
-                padding: 6px 12px;
+                padding: 8px 12px;
                 font-size: 12px;
+                white-space: nowrap;
             }
         }
 
@@ -962,7 +991,7 @@
             }
 
             .user-info {
-                gap: 6px;
+                gap: 8px;
                 flex-wrap: wrap;
                 justify-content: center;
             }
@@ -974,24 +1003,21 @@
 
             #userName {
                 font-size: 13px;
-                width: 100%;
-                text-align: center;
-                margin-bottom: 5px;
             }
 
-            .btn {
-                padding: 8px 10px;
-                font-size: 11px;
-                flex: 1;
-                min-width: 70px;
-                max-width: 100px;
+            .header .btn {
+                padding: 10px 16px;
+                font-size: 12px;
             }
 
-            .btn-add {
-                order: -1;
+            .header .btn-add {
                 flex: 0 0 100%;
-                max-width: 100%;
-                margin-bottom: 5px;
+                margin-bottom: 8px;
+            }
+
+            .header .btn-secondary,
+            .header .btn-primary {
+                flex: 1;
             }
 
             .record-card {
