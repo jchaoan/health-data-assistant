@@ -324,3 +324,114 @@ body.dark-mode .skeleton {
         background: #e0e0e0;
     }
 }
+
+/* ============================================
+   底部導覽列 - 7項緊湊版（全局覆蓋）
+   ============================================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 4px 0;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    z-index: 1000;
+    height: auto;
+    min-height: 56px;
+}
+
+.bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #999;
+    font-size: 10px;
+    padding: 4px 0;
+    border-radius: 8px;
+    transition: color 0.2s ease;
+    min-width: 0;
+    flex: 1;
+    max-width: 60px;
+    gap: 2px;
+}
+
+.bottom-nav .nav-item:hover {
+    color: #667eea;
+    background: transparent;
+}
+
+.bottom-nav .nav-item.active {
+    color: #667eea;
+}
+
+.bottom-nav .nav-item.active .nav-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.bottom-nav .nav-icon {
+    font-size: 18px;
+    width: 36px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.bottom-nav .nav-label {
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+}
+
+/* 手機版進一步優化 */
+@media (max-width: 400px) {
+    .bottom-nav {
+        padding: 3px 0;
+        padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px));
+        min-height: 52px;
+    }
+
+    .bottom-nav .nav-item {
+        font-size: 9px;
+        padding: 3px 0;
+        max-width: 52px;
+    }
+
+    .bottom-nav .nav-icon {
+        font-size: 16px;
+        width: 32px;
+        height: 26px;
+        border-radius: 6px;
+    }
+}
+
+/* 深色模式底部導覽 */
+body.dark-mode .bottom-nav {
+    background: #1a1a1a;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .bottom-nav .nav-item {
+    color: #777;
+}
+
+body.dark-mode .bottom-nav .nav-item.active {
+    color: #667eea;
+}
+
+body.dark-mode .bottom-nav .nav-item:hover {
+    color: #667eea;
+}

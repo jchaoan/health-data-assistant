@@ -103,6 +103,34 @@
             transform: translateY(-2px);
         }
 
+        /* ===== 餐點類型選擇器 ===== */
+        .save-meal-type-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .save-meal-btn {
+            padding: 10px 8px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .save-meal-btn:hover {
+            border-color: #667eea;
+        }
+
+        .save-meal-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+        }
+
         /* ===== 響應式設計 ===== */
 
         /* 大螢幕 (桌面) */
@@ -257,6 +285,10 @@
 
             #saveSection .btn {
                 width: 100%;
+            }
+
+            .save-meal-type-selector {
+                grid-template-columns: repeat(2, 1fr) !important;
             }
 
             /* 知識庫管理響應式 */
@@ -924,7 +956,19 @@
                 <!-- 確認儲存區塊 -->
                 <div class="section" id="saveSection" style="display: none;">
                     <h2>💾 儲存此筆飲食記錄</h2>
-                    <p style="color: #666; margin-bottom: 15px;">確認辨識結果無誤後，點擊下方按鈕將此筆記錄儲存至您的飲食日記</p>
+                    <p style="color: #666; margin-bottom: 15px;">選擇餐點類型，然後儲存到您的飲食日記</p>
+
+                    <!-- 餐點類型選擇 -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; color: #333; margin-bottom: 10px; font-size: 14px;">餐點類型</label>
+                        <div class="save-meal-type-selector">
+                            <button type="button" class="save-meal-btn" data-type="breakfast">🌅 早餐</button>
+                            <button type="button" class="save-meal-btn active" data-type="lunch">☀️ 午餐</button>
+                            <button type="button" class="save-meal-btn" data-type="dinner">🌙 晚餐</button>
+                            <button type="button" class="save-meal-btn" data-type="snack">🍪 點心</button>
+                        </div>
+                    </div>
+
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <button class="btn btn-primary" onclick="saveToFirebase()" id="saveBtn">
                             ✓ 確認儲存到飲食記錄
@@ -1041,6 +1085,18 @@
         let currentAnalyzeMode = 'single'; // 預設單人模式
         let lastAnalysisResult = null; // 暫存最後一次辨識結果
         let lastImageBase64 = null; // 暫存最後一次圖片
+        let selectedSaveMealType = 'lunch'; // 預設午餐
+
+        // 餐點類型選擇事件綁定（延遲執行等待 DOM 載入）
+        setTimeout(() => {
+            document.querySelectorAll('.save-meal-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.save-meal-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedSaveMealType = this.dataset.type;
+                });
+            });
+        }, 100);
 
         // 模式切換函式
         window.setAnalyzeMode = (mode) => {
@@ -1470,6 +1526,7 @@
                         total_sodium: lastAnalysisResult.report.total_sodium || 0,
                         advice: lastAnalysisResult.report.advice || '',
                         mode: currentAnalyzeMode,
+                        meal_type: selectedSaveMealType,
                         image_base64: compressedImage
                     })
                 });
