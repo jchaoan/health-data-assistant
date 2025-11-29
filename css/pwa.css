@@ -327,94 +327,95 @@ body.dark-mode .skeleton {
 
 /* ============================================
    底部導覽列 - 7項緊湊版（全局覆蓋）
+   使用 !important 確保覆蓋各頁面內嵌樣式
    ============================================ */
 .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    padding: 4px 0;
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
-    z-index: 1000;
-    height: auto;
-    min-height: 56px;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    display: flex !important;
+    justify-content: space-evenly !important;
+    align-items: center !important;
+    padding: 4px 0 !important;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+    z-index: 1000 !important;
+    height: auto !important;
+    min-height: 56px !important;
 }
 
 .bottom-nav .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    color: #999;
-    font-size: 10px;
-    padding: 4px 0;
-    border-radius: 8px;
-    transition: color 0.2s ease;
-    min-width: 0;
-    flex: 1;
-    max-width: 60px;
-    gap: 2px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    color: #999 !important;
+    font-size: 10px !important;
+    padding: 4px 0 !important;
+    border-radius: 8px !important;
+    transition: color 0.2s ease !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+    max-width: 60px !important;
+    gap: 2px !important;
 }
 
 .bottom-nav .nav-item:hover {
-    color: #667eea;
-    background: transparent;
+    color: #667eea !important;
+    background: transparent !important;
 }
 
 .bottom-nav .nav-item.active {
-    color: #667eea;
+    color: #667eea !important;
 }
 
 .bottom-nav .nav-item.active .nav-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4) !important;
 }
 
 .bottom-nav .nav-icon {
-    font-size: 18px;
-    width: 36px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    margin: 0;
+    font-size: 18px !important;
+    width: 36px !important;
+    height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    margin: 0 !important;
 }
 
 .bottom-nav .nav-label {
-    font-weight: 500;
-    white-space: nowrap;
-    line-height: 1.2;
-    letter-spacing: -0.3px;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.3px !important;
 }
 
 /* 手機版進一步優化 */
 @media (max-width: 400px) {
     .bottom-nav {
-        padding: 3px 0;
-        padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px));
-        min-height: 52px;
+        padding: 3px 0 !important;
+        padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px)) !important;
+        min-height: 52px !important;
     }
 
     .bottom-nav .nav-item {
-        font-size: 9px;
-        padding: 3px 0;
-        max-width: 52px;
+        font-size: 9px !important;
+        padding: 3px 0 !important;
+        max-width: 52px !important;
     }
 
     .bottom-nav .nav-icon {
-        font-size: 16px;
-        width: 32px;
-        height: 26px;
-        border-radius: 6px;
+        font-size: 16px !important;
+        width: 32px !important;
+        height: 26px !important;
+        border-radius: 6px !important;
     }
 }
 
