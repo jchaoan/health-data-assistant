@@ -126,12 +126,13 @@
         }
 
         .record-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5dc7 0%, #5d3a8c 100%);
             color: white;
             padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         .record-date {
@@ -1110,31 +1111,31 @@
         }
 
         // 顯示記錄
-        // 根據營養素數值計算顏色（與統計圖表一致）
+        // 根據營養素數值計算顏色（與統計圖表一致，使用不透明色彩增強對比度）
         function getNutrientColor(nutrient, value) {
             switch(nutrient) {
                 case 'fiber':
                     // 膳食纖維：25-35g 達標
-                    if (value >= 25 && value <= 35) return 'rgba(75, 192, 192, 0.8)';  // 綠色
-                    else if (value < 25) return 'rgba(255, 159, 64, 0.8)';  // 橘色
-                    else return 'rgba(255, 99, 132, 0.8)';  // 紅色
+                    if (value >= 25 && value <= 35) return '#2e9e7e';  // 深綠色
+                    else if (value < 25) return '#e07d35';  // 橘色
+                    else return '#dc4c64';  // 紅色
 
                 case 'sodium':
                     // 鈉：<2300mg 正常
-                    if (value <= 2300) return 'rgba(75, 192, 192, 0.8)';  // 綠色
-                    else if (value <= 3000) return 'rgba(255, 206, 86, 0.8)';  // 黃色
-                    else return 'rgba(255, 99, 132, 0.8)';  // 紅色
+                    if (value <= 2300) return '#2e9e7e';  // 深綠色
+                    else if (value <= 3000) return '#d9a824';  // 黃色
+                    else return '#dc4c64';  // 紅色
 
                 case 'calories':
-                    return 'rgba(102, 126, 234, 0.8)';  // 紫藍色
+                    return '#5a6fd6';  // 紫藍色
                 case 'protein':
-                    return 'rgba(255, 99, 132, 0.8)';  // 紅色
+                    return '#dc4c64';  // 紅色
                 case 'fat':
-                    return 'rgba(255, 206, 86, 0.8)';  // 黃色
+                    return '#d9a824';  // 黃色
                 case 'carbs':
-                    return 'rgba(54, 162, 235, 0.8)';  // 藍色
+                    return '#2d8bc9';  // 藍色
                 default:
-                    return 'rgba(200, 200, 200, 0.8)';  // 灰色
+                    return '#888888';  // 灰色
             }
         }
 
