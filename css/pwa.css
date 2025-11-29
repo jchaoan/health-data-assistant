@@ -1,0 +1,399 @@
+/* ============================================
+   PWA 專用樣式 - 優化手機 App 體驗
+   ============================================ */
+
+/* ===== PWA 模式檢測樣式 ===== */
+/* 在 PWA standalone 模式下套用 */
+
+/* ===== Safe Area 支援（iPhone X 等瀏海手機）===== */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+    --nav-height: 70px;
+}
+
+/* PWA 模式下的 body padding */
+body.pwa-mode {
+    padding-top: var(--safe-area-top);
+    padding-bottom: calc(var(--nav-height) + var(--safe-area-bottom));
+}
+
+/* ===== 優化的底部導航欄 ===== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+    padding-bottom: calc(8px + var(--safe-area-bottom));
+    box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+    z-index: 1000;
+    height: calc(var(--nav-height) + var(--safe-area-bottom));
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #999;
+    font-size: 11px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+    min-width: 60px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item:active {
+    transform: scale(0.92);
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.nav-item.active {
+    color: #667eea;
+}
+
+.nav-item.active .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-icon {
+    font-size: 26px;
+    margin-bottom: 4px;
+    transition: transform 0.25s ease;
+}
+
+.nav-label {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* 中間的拍照按鈕特殊樣式 */
+.nav-item.nav-camera {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    margin-top: -25px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    min-width: unset;
+}
+
+.nav-item.nav-camera .nav-icon {
+    font-size: 28px;
+    margin-bottom: 0;
+}
+
+.nav-item.nav-camera .nav-label {
+    display: none;
+}
+
+.nav-item.nav-camera:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== 深色模式底部導航 ===== */
+body.dark-mode .bottom-nav {
+    background: #1e1e1e;
+    box-shadow: 0 -2px 20px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .nav-item {
+    color: #888;
+}
+
+body.dark-mode .nav-item:active {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+body.dark-mode .nav-item.active {
+    color: #667eea;
+}
+
+/* ===== 頁面轉場動畫 ===== */
+.page-transition {
+    animation: fadeSlideIn 0.3s ease-out;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 離開動畫 */
+.page-exit {
+    animation: fadeSlideOut 0.2s ease-in forwards;
+}
+
+@keyframes fadeSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ===== PWA 模式專用樣式 ===== */
+body.pwa-mode .container {
+    max-width: 100%;
+    padding-left: calc(15px + var(--safe-area-left));
+    padding-right: calc(15px + var(--safe-area-right));
+}
+
+/* PWA 模式下隱藏不需要的元素 */
+body.pwa-mode .pwa-hide {
+    display: none !important;
+}
+
+/* PWA 模式下顯示的元素 */
+.pwa-only {
+    display: none !important;
+}
+
+body.pwa-mode .pwa-only {
+    display: block !important;
+}
+
+/* ===== 觸控優化 ===== */
+/* 增加所有可點擊元素的觸控區域 */
+button,
+.btn,
+.btn-icon,
+a.nav-item,
+.clickable {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* 按鈕點擊回饋 */
+button:active,
+.btn:active,
+.btn-icon:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+}
+
+/* ===== 拉動刷新提示 ===== */
+.pull-to-refresh {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    padding-top: var(--safe-area-top);
+}
+
+.pull-to-refresh.visible {
+    transform: translateY(0);
+}
+
+.pull-to-refresh .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== 卡片觸控效果 ===== */
+.card-touchable {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.card-touchable:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== 列表項目觸控效果 ===== */
+.list-item-touchable {
+    transition: background-color 0.15s ease;
+}
+
+.list-item-touchable:active {
+    background-color: rgba(102, 126, 234, 0.08);
+}
+
+/* ===== 頂部狀態欄佔位 (PWA 模式) ===== */
+.status-bar-spacer {
+    display: none;
+    height: var(--safe-area-top);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+body.pwa-mode .status-bar-spacer {
+    display: block;
+}
+
+/* ===== 滑動手勢提示 ===== */
+.swipe-hint {
+    position: fixed;
+    bottom: calc(var(--nav-height) + var(--safe-area-bottom) + 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.swipe-hint.visible {
+    opacity: 1;
+}
+
+/* ===== 載入骨架屏 ===== */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+body.dark-mode .skeleton {
+    background: linear-gradient(
+        90deg,
+        #2a2a2a 25%,
+        #3a3a3a 50%,
+        #2a2a2a 75%
+    );
+    background-size: 200% 100%;
+}
+
+/* ===== 響應式調整 ===== */
+@media (max-width: 375px) {
+    .nav-item {
+        padding: 6px 10px;
+        min-width: 50px;
+        font-size: 10px;
+    }
+
+    .nav-icon {
+        font-size: 22px;
+    }
+
+    .nav-item.nav-camera {
+        width: 54px;
+        height: 54px;
+        margin-top: -20px;
+    }
+
+    .nav-item.nav-camera .nav-icon {
+        font-size: 24px;
+    }
+}
+
+/* 大螢幕手機 */
+@media (min-width: 414px) {
+    .nav-item {
+        padding: 10px 20px;
+        min-width: 70px;
+    }
+
+    .nav-icon {
+        font-size: 28px;
+    }
+}
+
+/* 平板 - 底部導航改為側邊欄 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    :root {
+        --nav-height: 80px;
+    }
+
+    .bottom-nav {
+        padding: 12px 0;
+    }
+
+    .nav-item {
+        padding: 12px 24px;
+        font-size: 12px;
+    }
+
+    .nav-icon {
+        font-size: 30px;
+    }
+}
+
+/* ===== 網頁模式（非 PWA）調整 ===== */
+@media (display-mode: browser) {
+    /* 在瀏覽器模式下的樣式 */
+    .bottom-nav {
+        max-width: 600px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 20px 20px 0 0;
+    }
+}
+
+/* ===== 減少動畫模式 ===== */
+@media (prefers-reduced-motion: reduce) {
+    .page-transition,
+    .page-exit {
+        animation: none;
+    }
+
+    .nav-item,
+    .nav-icon,
+    button,
+    .btn,
+    .card-touchable {
+        transition: none;
+    }
+
+    .skeleton {
+        animation: none;
+        background: #e0e0e0;
+    }
+}

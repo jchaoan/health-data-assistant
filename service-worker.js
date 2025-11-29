@@ -1,5 +1,5 @@
 // 健康數據助理 Service Worker
-const CACHE_NAME = 'health-assistant-v2';
+const CACHE_NAME = 'health-assistant-v3';
 const urlsToCache = [
   '/',
   '/dashboard.html',
@@ -20,7 +20,11 @@ const urlsToCache = [
   '/manifest.json',
   '/js/utils.js',
   '/js/security.js',
-  '/js/pwa-install.js'
+  '/js/pwa-install.js',
+  '/js/pwa-utils.js',
+  '/js/config.js',
+  '/js/firebase-config.js',
+  '/css/pwa.css'
 ];
 
 // 安裝 Service Worker
