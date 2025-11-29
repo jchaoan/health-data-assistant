@@ -525,31 +525,81 @@
             margin: 5px 0;
         }
 
-        /* 快速問題建議 - 固定在輸入區上方 */
+        /* 快速問題建議區域 */
+        .quick-questions-wrapper {
+            border-top: 1px solid #eee;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+        }
+
+        .quick-questions-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 0.85em;
+            user-select: none;
+        }
+
+        .quick-questions-toggle:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .quick-questions-wrapper.collapsed .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .quick-questions-wrapper.collapsed .quick-questions {
+            display: none;
+        }
+
         .quick-questions {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            padding: 12px 20px;
+            padding: 8px 15px 12px;
             justify-content: center;
-            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
-            border-top: 1px solid #eee;
         }
 
         .quick-question-btn {
             background: white;
-            border: 2px solid #dee2e6;
-            padding: 10px 20px;
-            border-radius: 20px;
+            border: 1.5px solid #dee2e6;
+            padding: 8px 14px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .quick-question-btn:hover {
             border-color: #667eea;
             background: #f0f4ff;
             transform: translateY(-2px);
+        }
+
+        /* 手機版提示詞更小 */
+        @media (max-width: 480px) {
+            .quick-question-btn {
+                padding: 6px 10px;
+                font-size: 0.75em;
+                border-radius: 15px;
+            }
+
+            .quick-questions {
+                gap: 6px;
+                padding: 6px 10px 10px;
+            }
+
+            .quick-questions-toggle {
+                padding: 6px;
+                font-size: 0.8em;
+            }
         }
 
         /* 響應式設計 */
@@ -876,22 +926,28 @@
         </div>
 
         <!-- 快速問題建議 - 固定在輸入區上方 -->
-        <div class="quick-questions" id="quickQuestions">
-            <button class="quick-question-btn" onclick="sendQuickQuestion('我一天要吃多少蛋白質？')">
-                我一天要吃多少蛋白質？
-            </button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('想減肥該怎麼吃？')">
-                想減肥該怎麼吃？
-            </button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('糖尿病飲食建議')">
-                糖尿病飲食建議
-            </button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('高血壓要注意什麼？')">
-                高血壓要注意什麼？
-            </button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('增肌該怎麼吃？')">
-                增肌該怎麼吃？
-            </button>
+        <div class="quick-questions-wrapper" id="quickQuestionsWrapper">
+            <div class="quick-questions-toggle" onclick="toggleQuickQuestions()">
+                <span class="toggle-icon">▲</span>
+                <span id="toggleText">快速提問</span>
+            </div>
+            <div class="quick-questions" id="quickQuestions">
+                <button class="quick-question-btn" onclick="sendQuickQuestion('我一天要吃多少蛋白質？')">
+                    蛋白質攝取？
+                </button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('想減肥該怎麼吃？')">
+                    減肥飲食
+                </button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('糖尿病飲食建議')">
+                    糖尿病飲食
+                </button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('高血壓要注意什麼？')">
+                    高血壓注意
+                </button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('增肌該怎麼吃？')">
+                    增肌飲食
+                </button>
+            </div>
         </div>
 
         <!-- 輸入區域 -->
@@ -1222,6 +1278,33 @@
             console.warn('⚠️ loadProfile() 已廢棄，請使用 loadUserProfileFromFirestore()');
             // 不做任何事，防止載入舊資料
         }
+
+        // 切換快速提問區域顯示/隱藏
+        function toggleQuickQuestions() {
+            const wrapper = document.getElementById('quickQuestionsWrapper');
+            const toggleText = document.getElementById('toggleText');
+            wrapper.classList.toggle('collapsed');
+
+            if (wrapper.classList.contains('collapsed')) {
+                toggleText.textContent = '展開提問';
+            } else {
+                toggleText.textContent = '快速提問';
+            }
+
+            // 儲存用戶偏好到 localStorage
+            localStorage.setItem('quickQuestionsCollapsed', wrapper.classList.contains('collapsed'));
+        }
+
+        // 頁面載入時恢復用戶偏好
+        document.addEventListener('DOMContentLoaded', function() {
+            const isCollapsed = localStorage.getItem('quickQuestionsCollapsed') === 'true';
+            if (isCollapsed) {
+                const wrapper = document.getElementById('quickQuestionsWrapper');
+                const toggleText = document.getElementById('toggleText');
+                wrapper.classList.add('collapsed');
+                toggleText.textContent = '展開提問';
+            }
+        });
 
         // 發送快速問題
         function sendQuickQuestion(question) {
