@@ -854,6 +854,194 @@
         body.dark-mode .nav-item.active {
             color: #667eea;
         }
+
+        /* ===== 相機預覽 Modal ===== */
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .camera-modal.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .camera-modal-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .camera-close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .camera-close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .camera-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        .camera-body video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            padding: 30px;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .camera-error .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .camera-error .error-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .camera-error .error-message {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .camera-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .camera-capture-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background: transparent;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.1s;
+        }
+
+        .camera-capture-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .camera-capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .capture-inner {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 50%;
+            transition: background 0.1s;
+        }
+
+        .camera-capture-btn:active .capture-inner {
+            background: #ddd;
+        }
+
+        .camera-switch-btn,
+        .camera-gallery-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .camera-switch-btn:hover,
+        .camera-gallery-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 相機 Modal 響應式 */
+        @media (max-width: 480px) {
+            .camera-header {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+
+            .camera-footer {
+                gap: 30px;
+                padding: 20px;
+            }
+
+            .camera-capture-btn {
+                width: 65px;
+                height: 65px;
+            }
+
+            .camera-switch-btn,
+            .camera-gallery-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -908,9 +1096,10 @@
 
                     <!-- 圖片來源選擇 -->
                     <div class="upload-options" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
-                        <label for="cameraInput" class="file-upload-label" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <button type="button" class="file-upload-label" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;" onclick="openCamera()">
                             📷 拍照
-                        </label>
+                        </button>
+                        <!-- 保留原本的 file input 作為 fallback -->
                         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
 
                         <label for="imageInput" class="file-upload-label">
@@ -1027,6 +1216,40 @@
         </div>
     </div>
 
+    <!-- 相機預覽 Modal -->
+    <div id="cameraModal" class="camera-modal">
+        <div class="camera-modal-content">
+            <div class="camera-header">
+                <span>📷 拍攝食物照片</span>
+                <button class="camera-close-btn" onclick="closeCamera()">✕</button>
+            </div>
+            <div class="camera-body">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <!-- 相機錯誤提示 -->
+                <div id="cameraError" class="camera-error" style="display: none;">
+                    <div class="error-icon">📷</div>
+                    <div class="error-title">無法開啟相機</div>
+                    <div class="error-message" id="cameraErrorMessage"></div>
+                    <button class="btn btn-primary" onclick="fallbackToFileInput()" style="margin-top: 15px;">
+                        📁 改為選擇相簿圖片
+                    </button>
+                </div>
+            </div>
+            <div class="camera-footer">
+                <button class="camera-switch-btn" onclick="switchCamera()" title="切換鏡頭">
+                    🔄
+                </button>
+                <button class="camera-capture-btn" onclick="capturePhoto()">
+                    <div class="capture-inner"></div>
+                </button>
+                <button class="camera-gallery-btn" onclick="fallbackToFileInput()" title="選擇相簿">
+                    🖼️
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 底部導航欄 -->
     <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item">
@@ -1086,6 +1309,244 @@
         let lastAnalysisResult = null; // 暫存最後一次辨識結果
         let lastImageBase64 = null; // 暫存最後一次圖片
         let selectedSaveMealType = 'lunch'; // 預設午餐
+
+        // ===== 相機相關變數 =====
+        let cameraStream = null;
+        let currentFacingMode = 'environment'; // 'environment' = 後鏡頭, 'user' = 前鏡頭
+
+        // ===== 相機功能 =====
+
+        // 檢測是否支援 getUserMedia
+        function isCameraSupported() {
+            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        }
+
+        // 檢測是否為安全環境 (HTTPS 或 localhost)
+        function isSecureContext() {
+            return window.isSecureContext ||
+                   location.protocol === 'https:' ||
+                   location.hostname === 'localhost' ||
+                   location.hostname === '127.0.0.1';
+        }
+
+        // 開啟相機
+        window.openCamera = async () => {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            const errorDiv = document.getElementById('cameraError');
+            const errorMessage = document.getElementById('cameraErrorMessage');
+
+            // 顯示 Modal
+            modal.classList.add('active');
+            errorDiv.style.display = 'none';
+            video.style.display = 'block';
+
+            // 檢查是否為安全環境
+            if (!isSecureContext()) {
+                showCameraError('相機功能需要 HTTPS 安全連線。\n\n請使用 https:// 開頭的網址，或在本機 localhost 測試。');
+                return;
+            }
+
+            // 檢查是否支援 getUserMedia
+            if (!isCameraSupported()) {
+                showCameraError('您的瀏覽器不支援相機功能。\n\n請嘗試使用 Chrome、Safari 或 Firefox 的最新版本。');
+                return;
+            }
+
+            try {
+                // 先檢查權限狀態（如果瀏覽器支援）
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+                        if (permissionStatus.state === 'denied') {
+                            showCameraError('相機權限已被拒絕。\n\n請到瀏覽器設定中開啟相機權限，或點擊網址列左側的鎖頭圖示進行設定。');
+                            return;
+                        }
+                    } catch (e) {
+                        // 某些瀏覽器不支援 permissions.query for camera，忽略
+                        console.log('權限查詢不支援:', e);
+                    }
+                }
+
+                // 請求相機存取
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = cameraStream;
+
+                // 確保影片載入後播放
+                video.onloadedmetadata = () => {
+                    video.play().catch(e => console.log('影片播放失敗:', e));
+                };
+
+                console.log('[相機] 成功開啟相機');
+
+            } catch (error) {
+                console.error('[相機] 開啟失敗:', error);
+                handleCameraError(error);
+            }
+        };
+
+        // 處理相機錯誤
+        function handleCameraError(error) {
+            let message = '';
+
+            switch (error.name) {
+                case 'NotAllowedError':
+                case 'PermissionDeniedError':
+                    message = '相機權限被拒絕。\n\n請允許網站使用相機，或到瀏覽器設定中開啟相機權限。';
+                    break;
+                case 'NotFoundError':
+                case 'DevicesNotFoundError':
+                    message = '找不到相機裝置。\n\n請確認您的裝置有相機，且沒有被其他應用程式佔用。';
+                    break;
+                case 'NotReadableError':
+                case 'TrackStartError':
+                    message = '無法存取相機。\n\n相機可能正被其他應用程式使用中，請關閉其他使用相機的應用程式後再試。';
+                    break;
+                case 'OverconstrainedError':
+                    message = '相機不支援指定的設定。\n\n正在嘗試使用預設設定...';
+                    // 嘗試用最基本的設定重試
+                    retryWithBasicConstraints();
+                    return;
+                case 'NotSupportedError':
+                    message = '您的瀏覽器不支援相機功能。\n\n請嘗試使用 Chrome、Safari 或 Firefox。';
+                    break;
+                case 'AbortError':
+                    message = '相機存取被中斷。\n\n請重新嘗試。';
+                    break;
+                default:
+                    message = `無法開啟相機：${error.message || error.name}\n\n請嘗試重新整理頁面，或使用「選擇圖片」功能。`;
+            }
+
+            showCameraError(message);
+        }
+
+        // 顯示相機錯誤
+        function showCameraError(message) {
+            const video = document.getElementById('cameraVideo');
+            const errorDiv = document.getElementById('cameraError');
+            const errorMessage = document.getElementById('cameraErrorMessage');
+
+            video.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorMessage.textContent = message;
+        }
+
+        // 用基本設定重試
+        async function retryWithBasicConstraints() {
+            try {
+                const video = document.getElementById('cameraVideo');
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                video.srcObject = cameraStream;
+                video.style.display = 'block';
+                document.getElementById('cameraError').style.display = 'none';
+                console.log('[相機] 用基本設定成功開啟');
+            } catch (error) {
+                showCameraError('相機開啟失敗。\n\n請使用「選擇圖片」功能上傳照片。');
+            }
+        }
+
+        // 關閉相機
+        window.closeCamera = () => {
+            const modal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+
+            // 停止所有串流
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+
+            video.srcObject = null;
+            modal.classList.remove('active');
+            console.log('[相機] 已關閉');
+        };
+
+        // 切換前後鏡頭
+        window.switchCamera = async () => {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            console.log('[相機] 切換到:', currentFacingMode === 'environment' ? '後鏡頭' : '前鏡頭');
+
+            // 關閉現有串流
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+
+            // 重新開啟相機
+            try {
+                const video = document.getElementById('cameraVideo');
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode },
+                    audio: false
+                });
+                video.srcObject = cameraStream;
+            } catch (error) {
+                console.error('[相機] 切換失敗:', error);
+                // 切換失敗，嘗試切回原本的鏡頭
+                currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+                alert('此裝置可能只有一個鏡頭');
+            }
+        };
+
+        // 拍照
+        window.capturePhoto = () => {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+
+            if (!video.srcObject) {
+                alert('相機尚未準備好，請稍候');
+                return;
+            }
+
+            // 設定 canvas 尺寸與影片相同
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // 繪製影片畫面到 canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            // 取得圖片 data URL
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+            // 關閉相機 Modal
+            closeCamera();
+
+            // 顯示預覽
+            document.getElementById('previewImage').src = dataUrl;
+            document.getElementById('previewContainer').style.display = 'block';
+            document.getElementById('fileName').textContent = '已拍攝照片';
+
+            // 暫存 base64
+            lastImageBase64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+            console.log('[拍照] 照片已擷取，大小:', Math.round(lastImageBase64.length * 0.75 / 1024), 'KB');
+
+            // 創建 File 物件給 imageInput（讓上傳功能可以運作）
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('imageInput').files = dataTransfer.files;
+            }, 'image/jpeg', 0.9);
+        };
+
+        // Fallback 到檔案選擇
+        window.fallbackToFileInput = () => {
+            closeCamera();
+            // 觸發原本的 file input
+            document.getElementById('cameraInput').click();
+        };
 
         // 餐點類型選擇事件綁定（延遲執行等待 DOM 載入）
         setTimeout(() => {
