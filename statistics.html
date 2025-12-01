@@ -635,6 +635,107 @@
         body.dark-mode .insight-card {
             background: linear-gradient(135deg, #4a3b89 0%, #2d2b55 100%);
         }
+
+        /* AI 健康週報 Markdown 內容樣式 */
+        .insight-content h1,
+        .insight-content h2,
+        .insight-content h3 {
+            color: #ffd700;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+        }
+
+        .insight-content h1 { font-size: 1.3em; }
+        .insight-content h2 { font-size: 1.2em; }
+        .insight-content h3 { font-size: 1.1em; }
+
+        .insight-content p {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .insight-content ul,
+        .insight-content ol {
+            margin: 10px 0 10px 20px;
+            padding-left: 10px;
+        }
+
+        .insight-content li {
+            margin: 8px 0;
+            line-height: 1.7;
+        }
+
+        .insight-content strong,
+        .insight-content b {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .insight-content em {
+            font-style: italic;
+            color: #e0e0e0;
+        }
+
+        /* 手機版 AI 週報優化 */
+        @media (max-width: 768px) {
+            .insight-card {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .insight-header {
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+
+            .insight-icon {
+                font-size: 1.5em;
+                width: 40px;
+                height: 40px;
+            }
+
+            .insight-title {
+                font-size: 1.2em;
+            }
+
+            .insight-content {
+                font-size: 0.95em;
+                padding: 12px;
+                line-height: 1.6;
+            }
+
+            .insight-content h1 { font-size: 1.15em; }
+            .insight-content h2 { font-size: 1.1em; }
+            .insight-content h3 { font-size: 1.05em; }
+
+            .insight-content ul,
+            .insight-content ol {
+                margin: 8px 0 8px 15px;
+                padding-left: 5px;
+            }
+
+            .insight-content li {
+                margin: 6px 0;
+                line-height: 1.6;
+            }
+        }
+
+        /* 小手機版 AI 週報優化 */
+        @media (max-width: 480px) {
+            .insight-card {
+                padding: 12px;
+            }
+
+            .insight-content {
+                font-size: 0.9em;
+                padding: 10px;
+            }
+
+            .insight-content ul,
+            .insight-content ol {
+                margin-left: 10px;
+            }
+        }
     </style>
 </head>
 <body>
