@@ -855,6 +855,62 @@
             color: #667eea;
         }
 
+        /* ===== 可收合區塊 ===== */
+        .collapsible-section {
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .collapsible-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .collapse-icon {
+            font-size: 14px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .collapse-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            padding: 0 20px 20px 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 深色模式 */
+        body.dark-mode .collapsible-header:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
         /* ===== 相機預覽 Modal ===== */
         .camera-modal {
             display: none;
@@ -1127,9 +1183,14 @@
                     <img id="resultImage" src="" alt="">
                 </div>
 
-                <div class="section" id="jsonSection" style="display: none;">
-                    <h2>📊 YOLO 辨識數據</h2>
-                    <pre id="jsonOutput"></pre>
+                <div class="section collapsible-section" id="jsonSection" style="display: none;">
+                    <div class="collapsible-header" onclick="toggleJsonSection()">
+                        <h2>📊 YOLO 辨識數據</h2>
+                        <span class="collapse-icon" id="jsonCollapseIcon">▼</span>
+                    </div>
+                    <div class="collapsible-content" id="jsonContent" style="display: none;">
+                        <pre id="jsonOutput"></pre>
+                    </div>
                 </div>
 
                 <div class="section" id="explainSection" style="display: none;">
@@ -1546,6 +1607,22 @@
             closeCamera();
             // 觸發原本的 file input
             document.getElementById('cameraInput').click();
+        };
+
+        // ===== JSON 區塊收合功能 =====
+        window.toggleJsonSection = () => {
+            const content = document.getElementById('jsonContent');
+            const icon = document.getElementById('jsonCollapseIcon');
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.add('expanded');
+                icon.textContent = '▲';
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('expanded');
+                icon.textContent = '▼';
+            }
         };
 
         // 餐點類型選擇事件綁定（延遲執行等待 DOM 載入）
