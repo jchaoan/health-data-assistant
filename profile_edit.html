@@ -632,6 +632,19 @@
             <div style="width: 120px;"></div>
         </div>
 
+        <!-- 帳號資訊（唯讀） -->
+        <div class="main-card" style="margin-bottom: 20px;">
+            <div class="card-header" style="padding: 20px 30px;">
+                <h2>📧 帳號資訊</h2>
+            </div>
+            <div class="card-body" style="padding: 20px 30px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #666;">登入帳號：</span>
+                    <span id="userEmail" style="font-weight: 600; color: #667eea;">載入中...</span>
+                </div>
+            </div>
+        </div>
+
         <form id="profileForm">
             <!-- 基本資料 -->
             <div class="main-card">
@@ -1185,6 +1198,8 @@
         // 檢查登入狀態
         auth.onAuthStateChanged((user) => {
             if (user) {
+                // 顯示帳號 Email
+                document.getElementById('userEmail').textContent = user.email;
                 loadUserProfile();
             } else {
                 window.location.href = 'login.html';
