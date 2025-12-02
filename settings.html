@@ -971,6 +971,28 @@
         <div id="accountManagement" class="settings-section" style="display: none;">
             <h2>👤 帳號管理</h2>
 
+            <!-- 設定密碼（僅 Google 登入用戶顯示） -->
+            <div class="settings-item" id="setPasswordSection" style="display: none;">
+                <div class="settings-label">
+                    <h3>🔐 設定密碼</h3>
+                    <p id="passwordStatusText">您目前使用 Google 登入，設定密碼後可用 Email + 密碼登入</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-primary" id="setPasswordBtn" onclick="sendSetPasswordEmail()">設定密碼</button>
+                </div>
+            </div>
+
+            <!-- 已有密碼的用戶顯示 -->
+            <div class="settings-item" id="changePasswordSection" style="display: none;">
+                <div class="settings-label">
+                    <h3>🔐 變更密碼</h3>
+                    <p>發送密碼重設信到您的信箱</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-secondary" onclick="sendSetPasswordEmail()">重設密碼</button>
+                </div>
+            </div>
+
             <div class="settings-item">
                 <div class="settings-label">
                     <h3>登出</h3>
@@ -1247,6 +1269,9 @@
 
                 // 載入設定狀態
                 loadAppSettings();
+
+                // 檢查用戶的登入方式，顯示對應的密碼設定選項
+                checkAuthProviders(user);
             } else {
                 console.log('[設定] 未登入，導向登入頁');
                 alert('請先登入');
@@ -1581,6 +1606,50 @@
             } catch (error) {
                 console.error('[設定] 登出失敗:', error);
                 alert('登出失敗: ' + error.message);
+            }
+        }
+
+        // 檢查用戶的登入方式（Google / Email+密碼）
+        function checkAuthProviders(user) {
+            const providers = user.providerData.map(p => p.providerId);
+            console.log('[設定] 用戶登入方式:', providers);
+
+            const hasPassword = providers.includes('password');
+            const hasGoogle = providers.includes('google.com');
+
+            if (hasGoogle && !hasPassword) {
+                // 純 Google 登入用戶，顯示「設定密碼」
+                document.getElementById('setPasswordSection').style.display = 'flex';
+                document.getElementById('changePasswordSection').style.display = 'none';
+            } else if (hasPassword) {
+                // 已有密碼的用戶，顯示「變更密碼」
+                document.getElementById('setPasswordSection').style.display = 'none';
+                document.getElementById('changePasswordSection').style.display = 'flex';
+            }
+        }
+
+        // 發送設定/重設密碼信
+        async function sendSetPasswordEmail() {
+            const user = auth.currentUser;
+            if (!user || !user.email) {
+                alert('無法取得用戶資訊');
+                return;
+            }
+
+            const btn = document.getElementById('setPasswordBtn') || event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '發送中...';
+
+            try {
+                await auth.sendPasswordResetEmail(user.email);
+                alert('✅ 密碼設定信已發送到 ' + user.email + '\n\n請檢查信箱（包括垃圾郵件），點擊連結設定密碼。');
+                btn.textContent = '已發送';
+            } catch (error) {
+                console.error('[設定] 發送密碼設定信失敗:', error);
+                alert('發送失敗: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 
