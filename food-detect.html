@@ -1755,15 +1755,23 @@
 
                     // 顯示熱量與營養素總計
                     document.getElementById('explainSection').style.display = 'block';
-                    const totalProtein = data.report.total_protein || 0;
-                    const totalFat = data.report.total_fat || 0;
-                    const totalCarbs = data.report.total_carbs || 0;
-                    const totalFiber = data.report.total_fiber || 0;
-                    const totalSodium = data.report.total_sodium || 0;
+
+                    // 格式化數字：最多顯示1位小數
+                    const fmt = (n) => {
+                        const num = Number(n) || 0;
+                        return Number.isInteger(num) ? num : parseFloat(num.toFixed(1));
+                    };
+
+                    const totalProtein = fmt(data.report.total_protein);
+                    const totalFat = fmt(data.report.total_fat);
+                    const totalCarbs = fmt(data.report.total_carbs);
+                    const totalFiber = fmt(data.report.total_fiber);
+                    const totalSodium = fmt(data.report.total_sodium);
+                    const totalCalories = fmt(data.report.total_calories);
 
                     document.getElementById('geminiExplain').innerHTML = `
                         <div style="text-align:center; font-size: 2em; color: #667eea; margin-bottom: 15px;">
-                            總熱量：<strong>${data.report.total_calories}</strong> Kcal
+                            總熱量：<strong>${totalCalories}</strong> Kcal
                         </div>
                         <div style="text-align:center; font-size: 1.2em; color: #666; margin-bottom: 20px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
                             <span>🥩 蛋白質: <strong>${totalProtein}g</strong></span>
@@ -1777,10 +1785,10 @@
                                 <div style="padding: 10px 0; border-bottom: 1px solid #eee;">
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span><strong>${item.name}</strong></span>
-                                        <span style="color: #E65100; font-weight: bold;">${item.calories} kcal</span>
+                                        <span style="color: #E65100; font-weight: bold;">${fmt(item.calories)} kcal</span>
                                     </div>
                                     <div style="font-size: 0.85em; color: #888;">
-                                        蛋白質 ${item.protein || 0}g | 脂肪 ${item.fat || 0}g | 碳水 ${item.carbs || 0}g | 纖維 ${item.fiber || 0}g | 鈉 ${item.sodium || 0}mg
+                                        蛋白質 ${fmt(item.protein)}g | 脂肪 ${fmt(item.fat)}g | 碳水 ${fmt(item.carbs)}g | 纖維 ${fmt(item.fiber)}g | 鈉 ${fmt(item.sodium)}mg
                                         ${item.note ? ` | ${item.note}` : ''}
                                     </div>
                                 </div>
