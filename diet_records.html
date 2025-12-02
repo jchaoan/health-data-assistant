@@ -871,17 +871,84 @@
             text-align: center;
             padding: 60px 20px;
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .empty-state h2 {
             color: #667eea;
             margin-bottom: 10px;
+            font-size: 22px;
         }
 
         .empty-state p {
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .empty-state .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-state .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .empty-state-tips {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .empty-state-tips h4 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .empty-state-tips li {
             color: #666;
-            margin-bottom: 20px;
+            font-size: 13px;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .empty-state-tips li::before {
+            content: '💡';
+            font-size: 12px;
         }
 
         .error-message {
@@ -1349,14 +1416,27 @@
 
         body.dark-mode .empty-state {
             background: #1e1e1e;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
         body.dark-mode .empty-state h2 {
-            color: #667eea;
+            color: #8b9cf4;
         }
 
         body.dark-mode .empty-state p {
-            color: #888;
+            color: #aaa;
+        }
+
+        body.dark-mode .empty-state-tips {
+            border-top-color: #333;
+        }
+
+        body.dark-mode .empty-state-tips h4 {
+            color: #8b9cf4;
+        }
+
+        body.dark-mode .empty-state-tips li {
+            color: #999;
         }
 
         body.dark-mode .loading {
@@ -1417,11 +1497,20 @@
 
         <!-- 空狀態 -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <h2>尚無飲食記錄</h2>
-            <p>開始記錄您的第一餐吧！</p>
+            <div class="empty-state-icon">🍽️</div>
+            <h2>開始您的健康飲食之旅！</h2>
+            <p>記錄每一餐，AI 會幫您分析營養成分<br>讓健康管理變得簡單又有趣</p>
             <button class="btn btn-primary" onclick="window.location.href='food-detect.html'">
-                📸 開始拍照記錄
+                📸 拍照辨識食物
             </button>
+            <div class="empty-state-tips">
+                <h4>小提示</h4>
+                <ul>
+                    <li>拍攝食物清晰照片，AI 辨識更準確</li>
+                    <li>每餐記錄，追蹤營養攝取更完整</li>
+                    <li>也可以手動新增記錄</li>
+                </ul>
+            </div>
         </div>
     </div>
 
