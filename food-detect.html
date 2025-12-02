@@ -1743,13 +1743,9 @@
                 document.getElementById('loading').classList.remove('active');
 
                 if (data.success) {
-                    // 顯示結果圖片 (支援 Base64 和 URL 兩種格式)
-                    document.getElementById('resultSection').style.display = 'block';
-                    if (data.image_data) {
-                        document.getElementById('resultImage').src = `data:image/jpeg;base64,${data.image_data}`;
-                    } else if (data.image_url) {
-                        document.getElementById('resultImage').src = data.image_url;
-                    }
+                    // 不顯示 YOLO 框框圖片，保持原始預覽圖片
+                    // document.getElementById('resultSection').style.display = 'block';
+                    // 原始圖片已在 previewContainer 中顯示
 
                     // 顯示辨識數據
                     document.getElementById('jsonSection').style.display = 'block';
