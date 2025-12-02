@@ -1743,9 +1743,11 @@
                 document.getElementById('loading').classList.remove('active');
 
                 if (data.success) {
-                    // 不顯示 YOLO 框框圖片，保持原始預覽圖片
-                    // document.getElementById('resultSection').style.display = 'block';
-                    // 原始圖片已在 previewContainer 中顯示
+                    // 顯示原始圖片（不顯示 YOLO 框框）
+                    document.getElementById('resultSection').style.display = 'block';
+                    // 使用預覽圖片（原始圖片），不使用 YOLO 標記的圖片
+                    const previewSrc = document.getElementById('previewImage').src;
+                    document.getElementById('resultImage').src = previewSrc;
 
                     // 顯示辨識數據
                     document.getElementById('jsonSection').style.display = 'block';
