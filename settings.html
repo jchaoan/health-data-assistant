@@ -685,142 +685,142 @@
         }
 
         /* ===== 深色模式 ===== */
-        body.dark-mode {
+        html.dark-mode {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
 
-        body.dark-mode .header,
-        body.dark-mode .user-card,
-        body.dark-mode .settings-section,
-        body.dark-mode .stat-card,
-        body.dark-mode .modal-content {
+        html.dark-mode .header,
+        html.dark-mode .user-card,
+        html.dark-mode .settings-section,
+        html.dark-mode .stat-card,
+        html.dark-mode .modal-content {
             background: #1e1e2e;
             color: #e0e0e0;
         }
 
-        body.dark-mode .header h1,
-        body.dark-mode .settings-section h2 {
+        html.dark-mode .header h1,
+        html.dark-mode .settings-section h2 {
             color: #a78bfa;
         }
 
-        body.dark-mode .user-name,
-        body.dark-mode .settings-label h3,
-        body.dark-mode .profile-item-value,
-        body.dark-mode .stat-value {
+        html.dark-mode .user-name,
+        html.dark-mode .settings-label h3,
+        html.dark-mode .profile-item-value,
+        html.dark-mode .stat-value {
             color: #e0e0e0;
         }
 
-        body.dark-mode .user-email,
-        body.dark-mode .settings-label p,
-        body.dark-mode .profile-item-label,
-        body.dark-mode .stat-label {
+        html.dark-mode .user-email,
+        html.dark-mode .settings-label p,
+        html.dark-mode .profile-item-label,
+        html.dark-mode .stat-label {
             color: #a0a0a0;
         }
 
-        body.dark-mode .profile-item {
+        html.dark-mode .profile-item {
             background: #2a2a3e;
             border-left-color: #a78bfa;
         }
 
-        body.dark-mode .settings-item {
+        html.dark-mode .settings-item {
             border-bottom-color: #3a3a4e;
         }
 
-        body.dark-mode .edit-form {
+        html.dark-mode .edit-form {
             background: #2a2a3e;
         }
 
-        body.dark-mode .form-group input,
-        body.dark-mode .form-group select,
-        body.dark-mode .settings-select,
-        body.dark-mode .feedback-form textarea {
+        html.dark-mode .form-group input,
+        html.dark-mode .form-group select,
+        html.dark-mode .settings-select,
+        html.dark-mode .feedback-form textarea {
             background: #1e1e2e;
             color: #e0e0e0;
             border-color: #3a3a4e;
         }
 
-        body.dark-mode .form-group input:focus,
-        body.dark-mode .form-group select:focus,
-        body.dark-mode .settings-select:focus,
-        body.dark-mode .feedback-form textarea:focus {
+        html.dark-mode .form-group input:focus,
+        html.dark-mode .form-group select:focus,
+        html.dark-mode .settings-select:focus,
+        html.dark-mode .feedback-form textarea:focus {
             border-color: #a78bfa;
         }
 
-        body.dark-mode .bottom-nav {
+        html.dark-mode .bottom-nav {
             background: #1e1e2e;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
         }
 
-        body.dark-mode .nav-item {
+        html.dark-mode .nav-item {
             color: #a0a0a0;
         }
 
-        body.dark-mode .nav-item:hover {
+        html.dark-mode .nav-item:hover {
             background: #2a2a3e;
             color: #a78bfa;
         }
 
-        body.dark-mode .nav-item.active {
+        html.dark-mode .nav-item.active {
             color: #a78bfa;
         }
 
-        body.dark-mode .btn-secondary {
+        html.dark-mode .btn-secondary {
             background: #3a3a4e;
             color: #e0e0e0;
         }
 
-        body.dark-mode .btn-secondary:hover {
+        html.dark-mode .btn-secondary:hover {
             background: #4a4a5e;
         }
 
-        body.dark-mode .settings-link {
+        html.dark-mode .settings-link {
             color: #a78bfa;
             border-color: #a78bfa;
         }
 
-        body.dark-mode .settings-link:hover {
+        html.dark-mode .settings-link:hover {
             background: #a78bfa;
             color: #1e1e2e;
         }
 
-        body.dark-mode .modal {
+        html.dark-mode .modal {
             background: rgba(0,0,0,0.7);
         }
 
-        body.dark-mode .about-item {
+        html.dark-mode .about-item {
             border-bottom-color: #3a3a4e;
         }
 
-        body.dark-mode .about-label {
+        html.dark-mode .about-label {
             color: #a0a0a0;
         }
 
-        body.dark-mode .about-value {
+        html.dark-mode .about-value {
             color: #e0e0e0;
         }
 
-        body.dark-mode .tech-badge {
+        html.dark-mode .tech-badge {
             background: #2a2a3e;
             color: #a78bfa;
         }
 
-        body.dark-mode .feedback-type-btn {
+        html.dark-mode .feedback-type-btn {
             background: #1e1e2e;
             color: #a0a0a0;
             border-color: #3a3a4e;
         }
 
-        body.dark-mode .feedback-type-btn.active {
+        html.dark-mode .feedback-type-btn.active {
             background: #2a2a3e;
             color: #a78bfa;
             border-color: #a78bfa;
         }
 
-        body.dark-mode .version-info {
+        html.dark-mode .version-info {
             color: #666;
         }
 
-        body.dark-mode .loading {
+        html.dark-mode .loading {
             background: #1e1e2e;
             color: #e0e0e0;
         }
@@ -1763,7 +1763,7 @@
 
             // 套用深色模式
             if (appSettings.darkMode) {
-                document.body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark-mode');
             }
 
             // 如果用餐提醒已開啟，啟動提醒檢查
@@ -1944,9 +1944,9 @@
             saveAppSettings();
 
             if (appSettings.darkMode) {
-                document.body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark-mode');
             } else {
-                document.body.classList.remove('dark-mode');
+                document.documentElement.classList.remove('dark-mode');
             }
         }
 
