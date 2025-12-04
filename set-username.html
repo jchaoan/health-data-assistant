@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <!-- 深色模式（內聯腳本+樣式，避免閃爍） -->
+    <script>try{if(JSON.parse(localStorage.getItem('bentoai_settings')||'{}').darkMode)document.documentElement.classList.add('dark-mode')}catch(e){}</script>
+    <style>html.dark-mode,html.dark-mode body{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)!important}html.dark-mode .bottom-nav{background:#1a1a2e!important;border-top:1px solid #2a2a3e}html.dark-mode .nav-item{color:#888!important}html.dark-mode .container,html.dark-mode .header,html.dark-mode .section,html.dark-mode .form-section,html.dark-mode .form-group,html.dark-mode .settings-section,html.dark-mode .settings-item,html.dark-mode .user-card,html.dark-mode .user-header,html.dark-mode .user-info,html.dark-mode .profile-item,html.dark-mode .profile-grid,html.dark-mode .profile-panel,html.dark-mode .option-card,html.dark-mode .feature-card,html.dark-mode .stat-card,html.dark-mode .summary-item,html.dark-mode .nutrition-item,html.dark-mode .nutrition-card,html.dark-mode .chart-container,html.dark-mode .chart-section,html.dark-mode .insight-card,html.dark-mode .tips-card,html.dark-mode .recent-card,html.dark-mode .card,html.dark-mode .chat-container,html.dark-mode .chat-header,html.dark-mode .chat-messages,html.dark-mode .chat-input-area,html.dark-mode .quick-questions,html.dark-mode .welcome-message,html.dark-mode .edit-form,html.dark-mode .stats-grid,html.dark-mode .loading,html.dark-mode .step,html.dark-mode .total-item,html.dark-mode .input-wrapper,html.dark-mode .options-grid,html.dark-mode .multi-option,html.dark-mode .tech-item,html.dark-mode .empty-state,html.dark-mode .filter-btn,html.dark-mode .time-selector,html.dark-mode .controls,html.dark-mode .record-card,html.dark-mode .meal-section,html.dark-mode .food-item,html.dark-mode .modal-content,html.dark-mode .upload-area,html.dark-mode .result-card,html.dark-mode .analysis-card,html.dark-mode .setup-container{background:#1e1e2e!important;color:#e0e0e0!important}html.dark-mode input,html.dark-mode select,html.dark-mode textarea{background:#2a2a3e!important;color:#e0e0e0!important;border-color:#3a3a4e!important}html.dark-mode .btn-secondary{background:#3a3a4e!important;color:#e0e0e0!important}</style>
+    <meta charset="UTF-8">
+    <script src="/js/dark-mode.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定帳號名稱 - 健康數據助理</title>
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="健康助理">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" href="logo.png" type="image/png">
+
+    <!-- 共用工具函數 -->
+    <script src="/js/utils.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 45px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .username-status {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            display: none;
+        }
+
+        .username-status.show {
+            display: block;
+        }
+
+        .username-status.checking {
+            color: #999;
+        }
+
+        .username-status.available {
+            color: #27ae60;
+        }
+
+        .username-status.taken {
+            color: #e74c3c;
+        }
+
+        .username-hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .username-hint.valid {
+            color: #27ae60;
+        }
+
+        .username-hint.invalid {
+            color: #e74c3c;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-skip {
+            background: transparent;
+            color: #888;
+            margin-top: 15px;
+            font-weight: normal;
+        }
+
+        .btn-skip:hover {
+            color: #667eea;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-box p {
+            color: #667eea;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* 深色模式 */
+        html.dark-mode .setup-container {
+            background: #1e1e1e;
+        }
+
+        html.dark-mode .header h1 {
+            color: #e0e0e0;
+        }
+
+        html.dark-mode .header p {
+            color: #aaa;
+        }
+
+        html.dark-mode label {
+            color: #ccc;
+        }
+
+        html.dark-mode input {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        html.dark-mode input:focus {
+            border-color: #667eea;
+        }
+
+        html.dark-mode .info-box {
+            background: #2a2a3e;
+        }
+
+        html.dark-mode .info-box p {
+            color: #a0a8d0;
+        }
+
+        @media (max-width: 480px) {
+            .setup-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="header">
+            <div class="header-icon">👤</div>
+            <h1>設定您的帳號名稱</h1>
+            <p>建立一個專屬帳號名，之後可以用帳號名稱登入</p>
+        </div>
+
+        <div class="info-box">
+            <p>帳號名稱規則：<br>
+            • 以英文字母開頭<br>
+            • 3-20 個字元<br>
+            • 只能包含英文、數字、底線</p>
+        </div>
+
+        <form id="usernameForm">
+            <div class="form-group">
+                <label for="username">帳號名稱</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="設定您的帳號名稱"
+                        required
+                    >
+                    <span class="username-status" id="usernameStatus"></span>
+                </div>
+                <div class="username-hint" id="usernameHint">例如：john_doe、user123</div>
+                <div class="error-message" id="usernameError"></div>
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">確認設定</button>
+            <button type="button" class="btn btn-skip" id="skipBtn">稍後再說</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">設定中...</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCk4GY-VkG4dd_zXP5HZQDlZbjdY0k0img",
+            authDomain: "fooddata-92fa8.firebaseapp.com",
+            projectId: "fooddata-92fa8",
+            storageBucket: "fooddata-92fa8.firebasestorage.app",
+            messagingSenderId: "459965557703",
+            appId: "1:459965557703:web:6a16b3937935219eb887e2",
+            measurementId: "G-R16CYV7QC2"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 驗證帳號格式
+        function isValidUsernameFormat(username) {
+            const regex = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
+            return regex.test(username);
+        }
+
+        // 即時檢查帳號可用性
+        let usernameCheckTimeout = null;
+        let lastCheckedUsername = '';
+        let isUsernameAvailable = false;
+
+        async function checkUsernameAvailability(username) {
+            const statusEl = document.getElementById('usernameStatus');
+            const hintEl = document.getElementById('usernameHint');
+
+            if (!username || username.length < 3) {
+                statusEl.className = 'username-status';
+                hintEl.textContent = '例如：john_doe、user123';
+                hintEl.className = 'username-hint';
+                isUsernameAvailable = false;
+                return;
+            }
+
+            if (!isValidUsernameFormat(username)) {
+                statusEl.textContent = '✗';
+                statusEl.className = 'username-status show taken';
+                hintEl.textContent = '格式錯誤：需以英文開頭，只能含英文、數字、底線';
+                hintEl.className = 'username-hint invalid';
+                isUsernameAvailable = false;
+                return;
+            }
+
+            statusEl.textContent = '⋯';
+            statusEl.className = 'username-status show checking';
+            hintEl.textContent = '檢查中...';
+            hintEl.className = 'username-hint';
+
+            try {
+                const doc = await db.collection('usernames').doc(username.toLowerCase()).get();
+                if (doc.exists) {
+                    statusEl.textContent = '✗';
+                    statusEl.className = 'username-status show taken';
+                    hintEl.textContent = '此帳號已被使用';
+                    hintEl.className = 'username-hint invalid';
+                    isUsernameAvailable = false;
+                } else {
+                    statusEl.textContent = '✓';
+                    statusEl.className = 'username-status show available';
+                    hintEl.textContent = '帳號可以使用';
+                    hintEl.className = 'username-hint valid';
+                    isUsernameAvailable = true;
+                }
+            } catch (error) {
+                console.error('[ERROR] 檢查帳號失敗:', error);
+                hintEl.textContent = '檢查失敗，請稍後再試';
+                hintEl.className = 'username-hint';
+                isUsernameAvailable = false;
+            }
+        }
+
+        // 監聽帳號輸入
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.trim();
+
+            if (usernameCheckTimeout) {
+                clearTimeout(usernameCheckTimeout);
+            }
+
+            if (username === lastCheckedUsername) {
+                return;
+            }
+
+            usernameCheckTimeout = setTimeout(() => {
+                lastCheckedUsername = username;
+                checkUsernameAvailability(username);
+            }, 500);
+        });
+
+        // 檢查用戶是否已登入
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                // 未登入，跳轉到登入頁
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 檢查是否已有帳號名
+            try {
+                const memberDoc = await db.collection('member').doc(user.uid).get();
+                if (memberDoc.exists && memberDoc.data().username) {
+                    // 已有帳號名，跳轉到下一步
+                    redirectToNextPage(user);
+                }
+            } catch (error) {
+                console.error('[ERROR] 檢查用戶資料失敗:', error);
+            }
+        });
+
+        // 檢查用戶是否已有個人資料
+        async function checkUserProfileExists(userId) {
+            try {
+                const memberDoc = await db.collection('member').doc(userId).get();
+                return memberDoc.exists && memberDoc.data().height && memberDoc.data().weight;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // 跳轉到下一頁
+        async function redirectToNextPage(user) {
+            const hasProfile = await checkUserProfileExists(user.uid);
+            if (hasProfile) {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'profile_setup.html';
+            }
+        }
+
+        // 表單提交
+        document.getElementById('usernameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const errorEl = document.getElementById('usernameError');
+
+            // 格式驗證
+            if (!isValidUsernameFormat(username)) {
+                errorEl.textContent = '帳號格式不正確';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            // 等待可用性檢查完成
+            if (!isUsernameAvailable) {
+                errorEl.textContent = '請選擇一個可用的帳號名稱';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                loading.classList.add('show');
+                errorEl.classList.remove('show');
+
+                // 再次確認帳號未被使用
+                const usernameDoc = await db.collection('usernames').doc(username.toLowerCase()).get();
+                if (usernameDoc.exists) {
+                    throw { code: 'username-taken', message: '帳號已被使用' };
+                }
+
+                // 保存到 member 集合
+                await db.collection('member').doc(user.uid).set({
+                    username: username,
+                    email: user.email,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 保存到 usernames 集合
+                await db.collection('usernames').doc(username.toLowerCase()).set({
+                    uid: user.uid,
+                    email: user.email
+                });
+
+                console.log('[OK] 帳號名稱設定成功');
+
+                // 跳轉到下一頁
+                await redirectToNextPage(user);
+
+            } catch (error) {
+                console.error('[ERROR] 設定失敗:', error);
+                errorEl.textContent = error.message || '設定失敗，請稍後再試';
+                errorEl.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        });
+
+        // 跳過按鈕
+        document.getElementById('skipBtn').addEventListener('click', async function() {
+            const user = auth.currentUser;
+            if (user) {
+                await redirectToNextPage(user);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

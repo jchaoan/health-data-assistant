@@ -540,10 +540,33 @@
             }
         }
 
+        // 檢查用戶是否有設定帳號名
+        async function checkUserHasUsername(userId) {
+            try {
+                const memberDoc = await db.collection('member').doc(userId).get();
+                return memberDoc.exists && memberDoc.data().username;
+            } catch (error) {
+                console.error('[ERROR] 檢查帳號名失敗:', error);
+                return false;
+            }
+        }
+
         // 根據用戶資料狀態決定跳轉頁面
-        async function redirectAfterLogin(user) {
-            // 先保存用戶基本資料
-            await saveUserBasicInfo(user);
+        async function redirectAfterLogin(user, isGoogleLogin = false) {
+            // 先保存用戶基本資料（僅限 Email 註冊用戶，他們有 displayName）
+            if (!isGoogleLogin) {
+                await saveUserBasicInfo(user);
+            }
+
+            // Google 登入用戶：檢查是否已設定帳號名
+            if (isGoogleLogin) {
+                const hasUsername = await checkUserHasUsername(user.uid);
+                if (!hasUsername) {
+                    console.log('[INFO] Google 用戶尚未設定帳號名，跳轉到設定頁面');
+                    window.location.href = 'set-username.html';
+                    return;
+                }
+            }
 
             const hasProfile = await checkUserProfileExists(user.uid);
             if (hasProfile) {
@@ -701,8 +724,8 @@
 
                 console.log('[OK] Google 登入成功:', result.user.email);
 
-                // 登入成功，檢查用戶資料後跳轉
-                await redirectAfterLogin(result.user);
+                // 登入成功，檢查用戶資料後跳轉（標記為 Google 登入）
+                await redirectAfterLogin(result.user, true);
 
             } catch (error) {
                 console.error('[ERROR] Google 登入失敗:', error);
