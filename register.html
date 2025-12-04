@@ -735,6 +735,12 @@
                 registerBtn.disabled = true;
                 loading.classList.add('show');
 
+                // 檢查帳號名是否已被使用
+                const usernameDoc = await db.collection('usernames').doc(username.toLowerCase()).get();
+                if (usernameDoc.exists) {
+                    throw { code: 'auth/username-already-in-use', message: '此帳號名稱已被使用' };
+                }
+
                 // 使用 Firebase 建立帳號
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 console.log('[OK] 註冊成功:', userCredential.user.email);
@@ -743,6 +749,22 @@
                 await userCredential.user.updateProfile({
                     displayName: username
                 });
+
+                // 保存帳號名到 Firestore（用於帳號登入）
+                const user = userCredential.user;
+                await db.collection('member').doc(user.uid).set({
+                    username: username,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log('[OK] 用戶資料已保存到 Firestore');
+
+                // 保存帳號名對應（用於帳號查詢 Email）
+                await db.collection('usernames').doc(username.toLowerCase()).set({
+                    uid: user.uid,
+                    email: email
+                });
+                console.log('[OK] 帳號名對應已保存');
 
                 // 發送信箱驗證郵件
                 await userCredential.user.sendEmailVerification({
@@ -766,7 +788,12 @@
                 console.error('[ERROR] 註冊失敗:', error);
 
                 let errorMessage = '註冊失敗，請稍後再試';
-                if (error.code === 'auth/email-already-in-use') {
+                let errorField = 'emailError';
+
+                if (error.code === 'auth/username-already-in-use') {
+                    errorMessage = '此帳號名稱已被使用，請換一個';
+                    errorField = 'usernameError';
+                } else if (error.code === 'auth/email-already-in-use') {
                     errorMessage = '此 Email 已被註冊，請使用其他 Email 或直接登入';
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = '無效的 Email 格式';
@@ -776,8 +803,8 @@
                     errorMessage = '網路連線失敗，請檢查您的網路連線';
                 }
 
-                document.getElementById('emailError').textContent = errorMessage;
-                document.getElementById('emailError').classList.add('show');
+                document.getElementById(errorField).textContent = errorMessage;
+                document.getElementById(errorField).classList.add('show');
 
             } finally {
                 registerBtn.disabled = false;
