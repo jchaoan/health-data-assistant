@@ -436,6 +436,10 @@
             }, 500);
         });
 
+        // 檢查是否從設定頁面來（允許修改帳號名）
+        const urlParams = new URLSearchParams(window.location.search);
+        const isFromSettings = urlParams.get('from') === 'settings';
+
         // 檢查用戶是否已登入
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
@@ -448,8 +452,16 @@
             try {
                 const memberDoc = await db.collection('member').doc(user.uid).get();
                 if (memberDoc.exists && memberDoc.data().username) {
-                    // 已有帳號名，跳轉到下一步
-                    redirectToNextPage(user);
+                    if (isFromSettings) {
+                        // 從設定頁來的，預填現有帳號名讓用戶修改
+                        document.getElementById('username').value = memberDoc.data().username;
+                        document.querySelector('.header h1').textContent = '修改帳號名稱';
+                        document.getElementById('submitBtn').textContent = '確認修改';
+                        document.getElementById('skipBtn').textContent = '取消';
+                    } else {
+                        // 不是從設定頁來的，已有帳號名就跳轉到下一步
+                        redirectToNextPage(user);
+                    }
                 }
             } catch (error) {
                 console.error('[ERROR] 檢查用戶資料失敗:', error);
@@ -516,6 +528,18 @@
                     throw { code: 'username-taken', message: '帳號已被使用' };
                 }
 
+                // 如果是修改帳號名，先刪除舊的 usernames 記錄
+                if (isFromSettings) {
+                    const oldMemberDoc = await db.collection('member').doc(user.uid).get();
+                    if (oldMemberDoc.exists && oldMemberDoc.data().username) {
+                        const oldUsername = oldMemberDoc.data().username.toLowerCase();
+                        if (oldUsername !== username.toLowerCase()) {
+                            await db.collection('usernames').doc(oldUsername).delete();
+                            console.log('[OK] 舊帳號名記錄已刪除');
+                        }
+                    }
+                }
+
                 // 保存到 member 集合
                 await db.collection('member').doc(user.uid).set({
                     username: username,
@@ -532,7 +556,11 @@
                 console.log('[OK] 帳號名稱設定成功');
 
                 // 跳轉到下一頁
-                await redirectToNextPage(user);
+                if (isFromSettings) {
+                    window.location.href = 'settings.html';
+                } else {
+                    await redirectToNextPage(user);
+                }
 
             } catch (error) {
                 console.error('[ERROR] 設定失敗:', error);
@@ -544,13 +572,19 @@
             }
         });
 
-        // 跳過按鈕
+        // 跳過/取消按鈕
         document.getElementById('skipBtn').addEventListener('click', async function() {
-            const user = auth.currentUser;
-            if (user) {
-                await redirectToNextPage(user);
+            if (isFromSettings) {
+                // 從設定頁來的，返回設定頁
+                window.location.href = 'settings.html';
             } else {
-                window.location.href = 'login.html';
+                // 一般流程，跳到下一步
+                const user = auth.currentUser;
+                if (user) {
+                    await redirectToNextPage(user);
+                } else {
+                    window.location.href = 'login.html';
+                }
             }
         });
     </script>
