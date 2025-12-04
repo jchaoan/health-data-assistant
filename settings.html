@@ -975,6 +975,17 @@
         <div id="accountManagement" class="settings-section" style="display: none;">
             <h2>👤 帳號管理</h2>
 
+            <!-- 帳號名稱 -->
+            <div class="settings-item" id="usernameSection">
+                <div class="settings-label">
+                    <h3>📝 帳號名稱</h3>
+                    <p id="usernameDisplay">載入中...</p>
+                </div>
+                <div class="settings-action">
+                    <button class="btn btn-secondary" id="usernameBtn" onclick="goToSetUsername()">設定</button>
+                </div>
+            </div>
+
             <!-- 設定密碼（僅 Google 登入用戶顯示） -->
             <div class="settings-item" id="setPasswordSection" style="display: none;">
                 <div class="settings-label">
@@ -1258,6 +1269,9 @@
                 // 載入個人資料
                 await loadProfile();
 
+                // 載入帳號名稱
+                await loadUsername();
+
                 // 載入統計資料
                 await loadStatistics();
 
@@ -1304,6 +1318,31 @@
             } catch (error) {
                 console.error('[設定] 載入個人資料失敗:', error);
             }
+        }
+
+        // 載入帳號名稱
+        async function loadUsername() {
+            try {
+                const doc = await db.collection('member').doc(currentUser.uid).get();
+                const usernameDisplay = document.getElementById('usernameDisplay');
+                const usernameBtn = document.getElementById('usernameBtn');
+
+                if (doc.exists && doc.data().username) {
+                    usernameDisplay.textContent = doc.data().username;
+                    usernameBtn.textContent = '修改';
+                } else {
+                    usernameDisplay.textContent = '尚未設定';
+                    usernameBtn.textContent = '設定';
+                }
+            } catch (error) {
+                console.error('[設定] 載入帳號名稱失敗:', error);
+                document.getElementById('usernameDisplay').textContent = '載入失敗';
+            }
+        }
+
+        // 跳轉到設定帳號名頁面
+        function goToSetUsername() {
+            window.location.href = 'set-username.html';
         }
 
         // 顯示個人資料
