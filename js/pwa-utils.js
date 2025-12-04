@@ -117,30 +117,40 @@
     }
 
     // ===== 深色模式檢測 =====
+    // 注意：主要的深色模式由 dark-mode.js 和 settings.html 處理
+    // 這裡只是確保 PWA 模式下的一致性
     function initDarkMode() {
-        // 檢查本地儲存的設定
-        const savedTheme = localStorage.getItem('theme');
+        // 使用與主系統一致的 key: bentoai_settings
+        const SETTINGS_KEY = 'bentoai_settings';
 
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-        } else if (savedTheme === 'light') {
-            document.body.classList.remove('dark-mode');
-        } else {
-            // 自動跟隨系統
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        try {
+            const saved = localStorage.getItem(SETTINGS_KEY);
+            const settings = saved ? JSON.parse(saved) : {};
+
+            if (settings.darkMode) {
+                document.documentElement.classList.add('dark-mode');
                 document.body.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
             }
+        } catch (e) {
+            console.warn('[PWA] 深色模式設定讀取失敗:', e);
         }
 
-        // 監聽系統深色模式變化
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const savedTheme = localStorage.getItem('theme');
-            if (!savedTheme || savedTheme === 'auto') {
-                if (e.matches) {
-                    document.body.classList.add('dark-mode');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                }
+        // 監聽 storage 變化（與其他分頁同步）
+        window.addEventListener('storage', (e) => {
+            if (e.key === SETTINGS_KEY) {
+                try {
+                    const settings = JSON.parse(e.newValue || '{}');
+                    if (settings.darkMode) {
+                        document.documentElement.classList.add('dark-mode');
+                        document.body.classList.add('dark-mode');
+                    } else {
+                        document.documentElement.classList.remove('dark-mode');
+                        document.body.classList.remove('dark-mode');
+                    }
+                } catch (err) {}
             }
         });
     }

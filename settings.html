@@ -1800,9 +1800,14 @@
             updateToggle('darkModeToggle', appSettings.darkMode);
             document.getElementById('unitSelect').value = appSettings.unit;
 
-            // 套用深色模式
+            // 套用深色模式（確保同步）
             if (appSettings.darkMode) {
                 document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            } else {
+                // 確保淺色模式時移除 dark-mode class
+                document.documentElement.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
             }
 
             // 如果用餐提醒已開啟，啟動提醒檢查
@@ -1984,8 +1989,10 @@
 
             if (appSettings.darkMode) {
                 document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
             } else {
                 document.documentElement.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
             }
         }
 

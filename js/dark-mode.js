@@ -138,12 +138,15 @@
     function applyDarkMode() {
         try {
             const saved = localStorage.getItem(SETTINGS_KEY);
-            if (saved) {
-                const settings = JSON.parse(saved);
-                if (settings.darkMode) {
-                    document.documentElement.classList.add('dark-mode');
-                    document.body && document.body.classList.add('dark-mode');
-                }
+            const settings = saved ? JSON.parse(saved) : {};
+
+            if (settings.darkMode) {
+                document.documentElement.classList.add('dark-mode');
+                document.body && document.body.classList.add('dark-mode');
+            } else {
+                // 確保淺色模式時移除 dark-mode class
+                document.documentElement.classList.remove('dark-mode');
+                document.body && document.body.classList.remove('dark-mode');
             }
         } catch (e) {
             console.warn('[深色模式] 讀取設定失敗:', e);
