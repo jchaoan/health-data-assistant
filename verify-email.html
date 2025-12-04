@@ -97,6 +97,21 @@
             word-break: break-all;
         }
 
+        .spam-notice {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #e65100;
+            text-align: center;
+        }
+
+        .spam-notice strong {
+            color: #bf360c;
+        }
+
         .steps {
             text-align: left;
             background: #f9f9f9;
@@ -275,6 +290,16 @@
             color: #888;
         }
 
+        html.dark-mode .spam-notice {
+            background: linear-gradient(135deg, #3d3520 0%, #4a3d20 100%);
+            border-color: #8d6e3f;
+            color: #ffa726;
+        }
+
+        html.dark-mode .spam-notice strong {
+            color: #ffcc80;
+        }
+
         html.dark-mode .tips {
             background: #3d3520;
         }
@@ -318,6 +343,10 @@
 
         <div class="email-display" id="emailDisplay">
             載入中...
+        </div>
+
+        <div class="spam-notice">
+            ⚠️ 沒看到郵件？請檢查<strong>垃圾郵件</strong>或<strong>促銷郵件</strong>資料夾
         </div>
 
         <div class="steps">
