@@ -7,104 +7,116 @@
 
     const SETTINGS_KEY = 'bentoai_settings';
 
-    // 深色模式通用樣式（底部導航欄等共用元件）
+    // 深色模式通用樣式（使用 html.dark-mode 選擇器，確保在 body 載入前就生效）
     const darkModeStyles = `
+        /* ===== 深色模式 - 背景（最重要，必須先生效） ===== */
+        html.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        }
+
+        html.dark-mode body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        }
+
         /* ===== 深色模式 - 底部導航欄 ===== */
-        body.dark-mode .bottom-nav {
+        html.dark-mode .bottom-nav {
             background: #1a1a2e !important;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.4) !important;
             border-top: 1px solid #2a2a3e;
         }
 
-        body.dark-mode .nav-item {
+        html.dark-mode .nav-item {
             color: #888 !important;
         }
 
-        body.dark-mode .nav-item:hover {
+        html.dark-mode .nav-item:hover {
             background: #2a2a3e !important;
             color: #a78bfa !important;
         }
 
-        body.dark-mode .nav-item.active {
+        html.dark-mode .nav-item.active {
             color: #a78bfa !important;
         }
 
-        body.dark-mode .nav-item.active .nav-icon {
+        html.dark-mode .nav-item.active .nav-icon {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: white !important;
         }
 
-        body.dark-mode .nav-icon {
+        html.dark-mode .nav-icon {
             color: inherit;
         }
 
-        /* ===== 深色模式 - 通用背景 ===== */
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-        }
-
         /* ===== 深色模式 - 卡片與容器 ===== */
-        body.dark-mode .card,
-        body.dark-mode .container > div[class*="card"],
-        body.dark-mode .modal-content {
+        html.dark-mode .card,
+        html.dark-mode .container > div[class*="card"],
+        html.dark-mode .modal-content,
+        html.dark-mode .header,
+        html.dark-mode .user-card,
+        html.dark-mode .settings-section,
+        html.dark-mode .stat-card,
+        html.dark-mode .user-header,
+        html.dark-mode .nutrition-card,
+        html.dark-mode .recent-card,
+        html.dark-mode .tips-card {
             background: #1e1e2e !important;
             color: #e0e0e0 !important;
         }
 
         /* ===== 深色模式 - 表單元素 ===== */
-        body.dark-mode input,
-        body.dark-mode select,
-        body.dark-mode textarea {
+        html.dark-mode input,
+        html.dark-mode select,
+        html.dark-mode textarea {
             background: #2a2a3e !important;
             color: #e0e0e0 !important;
             border-color: #3a3a4e !important;
         }
 
-        body.dark-mode input:focus,
-        body.dark-mode select:focus,
-        body.dark-mode textarea:focus {
+        html.dark-mode input:focus,
+        html.dark-mode select:focus,
+        html.dark-mode textarea:focus {
             border-color: #a78bfa !important;
         }
 
-        body.dark-mode input::placeholder,
-        body.dark-mode textarea::placeholder {
+        html.dark-mode input::placeholder,
+        html.dark-mode textarea::placeholder {
             color: #666 !important;
         }
 
         /* ===== 深色模式 - 按鈕 ===== */
-        body.dark-mode .btn-secondary {
+        html.dark-mode .btn-secondary {
             background: #3a3a4e !important;
             color: #e0e0e0 !important;
         }
 
-        body.dark-mode .btn-secondary:hover {
+        html.dark-mode .btn-secondary:hover {
             background: #4a4a5e !important;
         }
 
         /* ===== 深色模式 - 文字顏色 ===== */
-        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+        html.dark-mode h1, html.dark-mode h2, html.dark-mode h3 {
             color: #e0e0e0 !important;
         }
 
-        body.dark-mode p, body.dark-mode span, body.dark-mode label {
+        html.dark-mode p, html.dark-mode span, html.dark-mode label {
             color: #b0b0b0 !important;
         }
 
         /* ===== 深色模式 - 滾動條 ===== */
-        body.dark-mode::-webkit-scrollbar {
+        html.dark-mode::-webkit-scrollbar {
             width: 8px;
         }
 
-        body.dark-mode::-webkit-scrollbar-track {
+        html.dark-mode::-webkit-scrollbar-track {
             background: #1a1a2e;
         }
 
-        body.dark-mode::-webkit-scrollbar-thumb {
+        html.dark-mode::-webkit-scrollbar-thumb {
             background: #3a3a4e;
             border-radius: 4px;
         }
 
-        body.dark-mode::-webkit-scrollbar-thumb:hover {
+        html.dark-mode::-webkit-scrollbar-thumb:hover {
             background: #4a4a5e;
         }
     `;
