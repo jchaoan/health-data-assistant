@@ -493,10 +493,24 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
                     console.log('[OK] 用戶基本資料已保存');
+                } else {
+                    // 如果資料存在但沒有 username，補上 username
+                    const data = memberDoc.data();
+                    if (!data.username && user.displayName) {
+                        await memberRef.update({
+                            username: user.displayName,
+                            email: user.email
+                        });
+                        console.log('[OK] 用戶名已補充保存');
+                    }
+                }
 
-                    // 如果有 username，保存到 usernames 集合（用於帳號登入查詢）
-                    if (user.displayName) {
-                        await db.collection('usernames').doc(user.displayName.toLowerCase()).set({
+                // 確保 usernames 集合有對應記錄（用於帳號登入查詢）
+                if (user.displayName) {
+                    const usernameRef = db.collection('usernames').doc(user.displayName.toLowerCase());
+                    const usernameDoc = await usernameRef.get();
+                    if (!usernameDoc.exists) {
+                        await usernameRef.set({
                             uid: user.uid,
                             email: user.email
                         });
