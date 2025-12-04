@@ -670,7 +670,7 @@
 
                 let errorMessage = '登入失敗，請稍後再試';
                 if (error.code === 'auth/user-not-found') {
-                    errorMessage = '找不到此帳號，請確認 Email 是否正確';
+                    errorMessage = '找不到此帳號，請確認 Email 或帳號名稱是否正確';
                 } else if (error.code === 'auth/wrong-password') {
                     errorMessage = '密碼錯誤，請重新輸入';
                 } else if (error.code === 'auth/invalid-email') {
@@ -678,7 +678,7 @@
                 } else if (error.code === 'auth/user-disabled') {
                     errorMessage = '此帳號已被停用';
                 } else if (error.code === 'auth/invalid-credential') {
-                    errorMessage = 'Email 或密碼錯誤';
+                    errorMessage = '帳號或密碼錯誤';
                 }
 
                 document.getElementById('passwordError').textContent = errorMessage;
