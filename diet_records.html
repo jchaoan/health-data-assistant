@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <!-- 深色模式（內聯腳本避免閃爍） -->
+    <script>try{if(JSON.parse(localStorage.getItem('bentoai_settings')||'{}').darkMode)document.documentElement.classList.add('dark-mode')}catch(e){}</script>
     <meta charset="UTF-8">
+    <script src="/js/dark-mode.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>我的飲食記錄</title>
     <!-- PWA 支援 -->
