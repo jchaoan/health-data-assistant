@@ -670,6 +670,16 @@
         }
 
         // 根據用戶資料狀態決定跳轉頁面
+        // 檢查用戶是否有帳號名
+        async function checkUserHasUsername(userId) {
+            try {
+                const memberDoc = await db.collection('member').doc(userId).get();
+                return memberDoc.exists && memberDoc.data().username;
+            } catch (error) {
+                return false;
+            }
+        }
+
         async function redirectAfterAuth(user, isNewUser = false) {
             // 如果是新用戶（Email 註冊），直接到個人資料設定頁面
             if (isNewUser) {
@@ -678,7 +688,15 @@
                 return;
             }
 
-            // Google 登入可能是新用戶也可能是舊用戶，檢查資料庫
+            // Google 登入：先檢查是否有帳號名
+            const hasUsername = await checkUserHasUsername(user.uid);
+            if (!hasUsername) {
+                console.log('[INFO] Google 用戶尚未設定帳號名，跳轉到設定頁面');
+                window.location.href = 'set-username.html';
+                return;
+            }
+
+            // 檢查是否有個人資料
             const hasProfile = await checkUserProfileExists(user.uid);
             if (hasProfile) {
                 console.log('[OK] 用戶已有個人資料，跳轉到主頁');
