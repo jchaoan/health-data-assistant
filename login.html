@@ -479,8 +479,54 @@
             }
         }
 
+        // 保存用戶基本資料（displayName, email）到 Firestore
+        async function saveUserBasicInfo(user) {
+            try {
+                const memberRef = db.collection('member').doc(user.uid);
+                const memberDoc = await memberRef.get();
+
+                // 如果用戶資料不存在，創建基本資料
+                if (!memberDoc.exists) {
+                    await memberRef.set({
+                        username: user.displayName || '',
+                        email: user.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    console.log('[OK] 用戶基本資料已保存');
+
+                    // 如果有 username，保存到 usernames 集合（用於帳號登入查詢）
+                    if (user.displayName) {
+                        await db.collection('usernames').doc(user.displayName.toLowerCase()).set({
+                            uid: user.uid,
+                            email: user.email
+                        });
+                        console.log('[OK] 用戶名對應已保存');
+                    }
+                }
+            } catch (error) {
+                console.error('[ERROR] 保存用戶基本資料失敗:', error);
+            }
+        }
+
+        // 透過帳號名稱查詢對應的 Email
+        async function getEmailByUsername(username) {
+            try {
+                const usernameDoc = await db.collection('usernames').doc(username.toLowerCase()).get();
+                if (usernameDoc.exists) {
+                    return usernameDoc.data().email;
+                }
+                return null;
+            } catch (error) {
+                console.error('[ERROR] 查詢帳號失敗:', error);
+                return null;
+            }
+        }
+
         // 根據用戶資料狀態決定跳轉頁面
         async function redirectAfterLogin(user) {
+            // 先保存用戶基本資料
+            await saveUserBasicInfo(user);
+
             const hasProfile = await checkUserProfileExists(user.uid);
             if (hasProfile) {
                 console.log('[OK] 用戶已有個人資料，跳轉到首頁');
@@ -515,13 +561,13 @@
             document.getElementById('emailError').classList.remove('show');
             document.getElementById('passwordError').classList.remove('show');
 
-            // Email 驗證
+            // Email 或帳號驗證
             if (!email) {
                 document.getElementById('emailError').textContent = '請輸入 Email 或帳號';
                 document.getElementById('emailError').classList.add('show');
                 isValid = false;
-            } else if (!email.includes('@') || !email.includes('.')) {
-                document.getElementById('emailError').textContent = '請輸入有效的 Email 格式';
+            } else if (email.length < 3) {
+                document.getElementById('emailError').textContent = 'Email 或帳號至少需要 3 個字元';
                 document.getElementById('emailError').classList.add('show');
                 isValid = false;
             }
@@ -548,7 +594,7 @@
                 return;
             }
 
-            const email = document.getElementById('email').value.trim();
+            let emailOrUsername = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
             const loading = document.getElementById('loading');
@@ -557,7 +603,21 @@
                 loginBtn.disabled = true;
                 loading.classList.add('show');
 
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                // 判斷是 Email 還是帳號
+                let loginEmail = emailOrUsername;
+                if (!emailOrUsername.includes('@')) {
+                    // 不是 Email 格式，當作帳號查詢對應的 Email
+                    console.log('[INFO] 嘗試用帳號登入:', emailOrUsername);
+                    const foundEmail = await getEmailByUsername(emailOrUsername);
+                    if (foundEmail) {
+                        loginEmail = foundEmail;
+                        console.log('[OK] 找到對應的 Email:', loginEmail);
+                    } else {
+                        throw { code: 'auth/user-not-found', message: '找不到此帳號' };
+                    }
+                }
+
+                const userCredential = await auth.signInWithEmailAndPassword(loginEmail, password);
                 console.log('[OK] 登入成功:', userCredential.user.email);
 
                 // 檢查信箱是否已驗證（Google 登入的用戶不需要檢查）
