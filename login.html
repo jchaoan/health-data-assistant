@@ -383,14 +383,14 @@
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">Email 或帳號</label>
                 <div class="input-wrapper">
                     <span class="input-icon">📧</span>
                     <input
                         type="email"
                         id="email"
                         name="email"
-                        placeholder="請輸入您的 Email"
+                        placeholder="請輸入您的 Email 或帳號"
                         required
                     >
                 </div>
@@ -517,7 +517,7 @@
 
             // Email 驗證
             if (!email) {
-                document.getElementById('emailError').textContent = '請輸入 Email';
+                document.getElementById('emailError').textContent = '請輸入 Email 或帳號';
                 document.getElementById('emailError').classList.add('show');
                 isValid = false;
             } else if (!email.includes('@') || !email.includes('.')) {
