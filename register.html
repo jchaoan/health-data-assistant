@@ -416,14 +416,14 @@
 
         <form id="registerForm">
             <div class="form-group">
-                <label for="username">帳號</label>
+                <label for="username">建立帳號</label>
                 <div class="input-wrapper">
                     <span class="input-icon">👤</span>
                     <input
                         type="text"
                         id="username"
                         name="username"
-                        placeholder="請輸入您的帳號"
+                        placeholder="設定您的帳號名稱"
                         required
                     >
                 </div>
@@ -664,15 +664,15 @@
 
             // 帳號驗證
             if (!username) {
-                document.getElementById('usernameError').textContent = '請輸入帳號';
+                document.getElementById('usernameError').textContent = '請設定帳號名稱';
                 document.getElementById('usernameError').classList.add('show');
                 isValid = false;
             } else if (username.length < 3) {
-                document.getElementById('usernameError').textContent = '帳號至少需要3個字元';
+                document.getElementById('usernameError').textContent = '帳號名稱至少需要 3 個字元';
                 document.getElementById('usernameError').classList.add('show');
                 isValid = false;
             } else if (username.length > 20) {
-                document.getElementById('usernameError').textContent = '帳號不能超過20個字元';
+                document.getElementById('usernameError').textContent = '帳號名稱不能超過 20 個字元';
                 document.getElementById('usernameError').classList.add('show');
                 isValid = false;
             }
