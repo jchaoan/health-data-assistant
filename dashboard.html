@@ -903,13 +903,22 @@
                 const data = await response.json();
 
                 if (data.success && data.daily_trend && data.daily_trend.length > 0) {
-                    const today = data.daily_trend[data.daily_trend.length - 1];
-                    todayData = {
-                        calories: Math.round(today.calories || 0),
-                        protein: Math.round(today.protein || 0),
-                        carbs: Math.round(today.carbs || 0),
-                        fat: Math.round(today.fat || 0)
-                    };
+                    // 取得今天的日期字串 (YYYY-MM-DD 格式)
+                    const now = new Date();
+                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+                    // 找到今天的資料
+                    const todayRecord = data.daily_trend.find(d => d.date === todayStr);
+
+                    if (todayRecord) {
+                        todayData = {
+                            calories: Math.round(todayRecord.calories || 0),
+                            protein: Math.round(todayRecord.protein || 0),
+                            carbs: Math.round(todayRecord.carbs || 0),
+                            fat: Math.round(todayRecord.fat || 0)
+                        };
+                    }
+                    // 如果今天沒有記錄，todayData 保持初始值 (全部為 0)
                 }
 
                 updateNutritionDisplay();
