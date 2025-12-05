@@ -1,5 +1,5 @@
 // 健康數據助理 Service Worker
-const CACHE_NAME = 'health-assistant-v6';
+const CACHE_NAME = 'health-assistant-v7';
 const urlsToCache = [
   '/',
   '/dashboard.html',
