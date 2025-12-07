@@ -1673,7 +1673,7 @@
                 document.getElementById('authNavBtns').style.display = 'none';
 
                 // 驗證 Token
-                await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/verify-token', {
+                await fetch('https://bentoai-api-30594327640.asia-east1.run.app/verify-token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ idToken: currentIdToken })
@@ -1737,7 +1737,7 @@
 
             try {
                 // 使用新的 /analyze API
-                const response = await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/analyze', {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/analyze', {
                     method: 'POST',
                     body: formData
                 });
@@ -1871,7 +1871,7 @@
             document.getElementById('uploadResult').innerHTML = '';
 
             try {
-                const response = await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/rag/upload-pdf', {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/rag/upload-pdf', {
                     method: 'POST',
                     body: formData
                 });
@@ -1916,7 +1916,7 @@
             }
 
             try {
-                const response = await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/rag/add-document', {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/rag/add-document', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1949,7 +1949,7 @@
             }
 
             try {
-                const response = await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/rag/reset', {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/rag/reset', {
                     method: 'POST'
                 });
 
@@ -2059,7 +2059,7 @@
                 console.log('[儲存] total_calories:', lastAnalysisResult.report.total_calories);
                 console.log('[儲存] 壓縮後圖片大小:', compressedImage ? Math.round(compressedImage.length * 0.75 / 1024) + 'KB' : '無');
 
-                const response = await fetch('https://bentoai-api-de2tsulgza-de.a.run.app/api/diet-records', {
+                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
