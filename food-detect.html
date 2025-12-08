@@ -1376,6 +1376,10 @@
         let lastImageBase64 = null; // 暫存最後一次圖片
         let selectedSaveMealType = 'lunch'; // 預設午餐
 
+        // ===== 防連點保護 =====
+        let isAnalyzing = false;  // 是否正在分析中
+        const COOLDOWN_TIME = 3000;  // 冷卻時間 3 秒
+
         // ===== 相機相關變數 =====
         let cameraStream = null;
         let currentFacingMode = 'environment'; // 'environment' = 後鏡頭, 'user' = 前鏡頭
@@ -1713,9 +1717,26 @@
         // 上傳圖片 (整合 YOLO + Gemini + RAG)
         window.uploadImage = async () => {
             const input = document.getElementById('imageInput');
+            const analyzeBtn = document.querySelector('button[onclick="uploadImage()"]');
+
+            // ===== 防連點保護 =====
+            if (isAnalyzing) {
+                console.log('[防連點] 正在分析中，請稍候...');
+                return;
+            }
+
             if (input.files.length === 0) {
                 alert("請先選擇圖片！");
                 return;
+            }
+
+            // 鎖定按鈕，開始分析
+            isAnalyzing = true;
+            if (analyzeBtn) {
+                analyzeBtn.disabled = true;
+                analyzeBtn.textContent = '⏳ 分析中...';
+                analyzeBtn.style.opacity = '0.6';
+                analyzeBtn.style.cursor = 'not-allowed';
             }
 
             const formData = new FormData();
@@ -1834,10 +1855,33 @@
                 } else {
                     alert('分析失敗: ' + (data.error || '未知錯誤'));
                 }
+
+                // ===== 解鎖按鈕（成功後加入冷卻時間）=====
+                setTimeout(() => {
+                    isAnalyzing = false;
+                    const analyzeBtn = document.querySelector('button[onclick="uploadImage()"]');
+                    if (analyzeBtn) {
+                        analyzeBtn.disabled = false;
+                        analyzeBtn.textContent = '🔍 開始辨識';
+                        analyzeBtn.style.opacity = '1';
+                        analyzeBtn.style.cursor = 'pointer';
+                    }
+                }, COOLDOWN_TIME);
+
             } catch (err) {
                 console.error(err);
                 alert("辨識失敗！");
                 document.getElementById('loading').classList.remove('active');
+
+                // ===== 解鎖按鈕（失敗時立即解鎖）=====
+                isAnalyzing = false;
+                const analyzeBtn = document.querySelector('button[onclick="uploadImage()"]');
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.textContent = '🔍 開始辨識';
+                    analyzeBtn.style.opacity = '1';
+                    analyzeBtn.style.cursor = 'pointer';
+                }
             }
         };
 

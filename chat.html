@@ -1388,8 +1388,10 @@
                 console.error('Error:', error);
             }
 
-            // 啟用發送按鈕
-            document.getElementById('sendBtn').disabled = false;
+            // 啟用發送按鈕（加入冷卻時間防止連點）
+            setTimeout(() => {
+                document.getElementById('sendBtn').disabled = false;
+            }, 2000);  // 2 秒冷卻
         }
 
         // 添加用戶訊息
