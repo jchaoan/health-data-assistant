@@ -1301,6 +1301,14 @@
                 // 顯示用戶摘要
                 displayUserSummary(profile);
 
+                // 同步更新進度卡片的體重和 BMI（使用最新 profile 數據）
+                if (profile.weight) {
+                    document.getElementById('currentWeight').textContent = profile.weight + ' kg';
+                }
+                if (profile.BMI) {
+                    document.getElementById('currentBMI').textContent = profile.BMI.toFixed(1);
+                }
+
                 // 取得運動建議
                 const recommendationResponse = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/exercise/recommendation', {
                     headers: {
