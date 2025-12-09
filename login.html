@@ -43,6 +43,7 @@
             width: 100%;
             max-width: 450px;
             animation: fadeIn 0.5s ease;
+            position: relative;
         }
 
         @keyframes fadeIn {
@@ -297,6 +298,30 @@
             display: block;
         }
 
+        /* 返回按鈕 */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        html.dark-mode .back-btn {
+            color: #a0a0ff;
+        }
+
         /* 響應式設計 */
         @media (max-width: 480px) {
             .login-container {
@@ -378,6 +403,7 @@
 </head>
 <body>
     <div class="login-container">
+        <button class="back-btn" onclick="window.location.href='welcome.html'">← 返回</button>
         <div class="logo-container">
             <div class="logo"><img src="logo.png" alt="Logo"></div>
             <h1>歡迎回來</h1>

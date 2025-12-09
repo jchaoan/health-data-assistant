@@ -445,10 +445,13 @@
             padding: 12px 20px;
             font-size: 1em;
             outline: none;
-            transition: all 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s, height 0.15s ease;
             resize: none;
-            max-height: 120px;
+            min-height: 46px;
+            max-height: 150px;
             font-family: inherit;
+            line-height: 1.4;
+            overflow-y: auto;
         }
 
         .chat-input:focus {
@@ -1054,10 +1057,19 @@
         });
 
         // 自動調整輸入框高度
-        document.getElementById('messageInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
+        const messageInput = document.getElementById('messageInput');
+
+        function autoResizeInput() {
+            messageInput.style.height = 'auto';
+            const newHeight = Math.min(messageInput.scrollHeight, 150);
+            messageInput.style.height = newHeight + 'px';
+        }
+
+        function resetInputHeight() {
+            messageInput.style.height = '46px';  // 重置到最小高度
+        }
+
+        messageInput.addEventListener('input', autoResizeInput);
 
         // 處理 Enter 鍵
         function handleKeyDown(event) {
@@ -1327,7 +1339,7 @@
             // 顯示用戶訊息
             addUserMessage(message);
             input.value = '';
-            input.style.height = 'auto';
+            resetInputHeight();  // 重置輸入框高度
 
             // 顯示載入動畫
             showTypingIndicator();

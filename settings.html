@@ -534,7 +534,15 @@
             background: #ccc;
             border-radius: 14px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s ease, transform 0.15s ease;
+        }
+
+        .toggle-switch:hover {
+            transform: scale(1.05);
+        }
+
+        .toggle-switch:active {
+            transform: scale(0.95);
         }
 
         .toggle-switch.active {
@@ -550,12 +558,31 @@
             height: 24px;
             background: white;
             border-radius: 50%;
-            transition: transform 0.3s;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .toggle-switch.active::after {
             transform: translateX(28px);
+        }
+
+        /* 深色模式切換時的圖示動畫 */
+        #darkModeToggle::before {
+            content: '☀️';
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        #darkModeToggle.active::before {
+            content: '🌙';
+            left: auto;
+            right: 6px;
+            opacity: 1;
         }
 
         /* 選擇器樣式 */
@@ -1990,9 +2017,11 @@
             if (appSettings.darkMode) {
                 document.documentElement.classList.add('dark-mode');
                 document.body.classList.add('dark-mode');
+                showToast('🌙 已切換至深色模式');
             } else {
                 document.documentElement.classList.remove('dark-mode');
                 document.body.classList.remove('dark-mode');
+                showToast('☀️ 已切換至淺色模式');
             }
         }
 

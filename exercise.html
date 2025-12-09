@@ -412,6 +412,63 @@
             color: #f44336;
         }
 
+        /* 新手歡迎提示 */
+        .welcome-tip {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #4caf50;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-tip-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .welcome-tip-content {
+            flex: 1;
+        }
+
+        .welcome-tip-content strong {
+            color: #2e7d32;
+            font-size: 15px;
+        }
+
+        .welcome-tip-content p {
+            color: #388e3c;
+            font-size: 13px;
+            margin: 5px 0 0 0;
+            line-height: 1.5;
+        }
+
+        html.dark-mode .welcome-tip {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+        }
+
+        html.dark-mode .welcome-tip-content strong {
+            color: #c8e6c9;
+        }
+
+        html.dark-mode .welcome-tip-content p {
+            color: #a5d6a7;
+        }
+
         /* 反饋區塊 */
         .feedback-section {
             background: #fff3e0;
@@ -1045,6 +1102,14 @@
                     <div class="progress-stat-label">已執行建議</div>
                 </div>
             </div>
+            <!-- 新手歡迎提示 -->
+            <div id="welcomeTip" class="welcome-tip" style="display: none;">
+                <span class="welcome-tip-icon">🎉</span>
+                <div class="welcome-tip-content">
+                    <strong>歡迎開始您的健身之旅！</strong>
+                    <p>AI 正在根據您的個人資料生成專屬運動計畫，每次執行後別忘了給我們反饋哦～</p>
+                </div>
+            </div>
         </div>
 
         <!-- 用戶摘要 -->
@@ -1266,6 +1331,15 @@
             const feedback = progress.feedback_summary || {};
             const executed = (feedback.executed || 0) + (feedback.partially_executed || 0);
             document.getElementById('executedCount').textContent = executed;
+
+            // 新手歡迎提示（首次使用或使用次數少於 3 次）
+            const historyCount = progress.history_count || 0;
+            const welcomeTip = document.getElementById('welcomeTip');
+            if (historyCount <= 2) {
+                welcomeTip.style.display = 'flex';
+            } else {
+                welcomeTip.style.display = 'none';
+            }
 
             // 顯示進度卡片
             document.getElementById('progressCard').style.display = 'block';

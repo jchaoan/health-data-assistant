@@ -1083,12 +1083,14 @@
         @media (max-width: 480px) {
             .camera-header {
                 padding: 12px 15px;
+                padding-top: max(12px, env(safe-area-inset-top));
                 font-size: 16px;
             }
 
             .camera-footer {
                 gap: 30px;
                 padding: 20px;
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
 
             .camera-capture-btn {
@@ -1101,6 +1103,24 @@
                 width: 45px;
                 height: 45px;
                 font-size: 20px;
+            }
+
+            /* 觸控優化：防止雙擊縮放 */
+            .camera-capture-btn,
+            .camera-switch-btn,
+            .camera-gallery-btn,
+            .camera-close-btn {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+
+        /* 手機版餐點類型按鈕優化 */
+        @media (max-width: 480px) {
+            .save-meal-btn {
+                padding: 12px 8px;
+                font-size: 14px;
+                min-height: 48px;  /* iOS 建議的最小觸控區域 */
             }
         }
     </style>
@@ -1853,7 +1873,20 @@
 
                     console.log('分析完成:', data);
                 } else {
-                    alert('分析失敗: ' + (data.error || '未知錯誤'));
+                    // 根據錯誤類型提供更具體的訊息
+                    let errorMsg = '分析失敗';
+                    if (data.error) {
+                        if (data.error.includes('rate') || data.error.includes('quota')) {
+                            errorMsg = '目前使用人數較多，請稍後再試（約 1 分鐘）';
+                        } else if (data.error.includes('timeout') || data.error.includes('Timeout')) {
+                            errorMsg = '分析時間過長，請嘗試拍攝較簡單的食物圖片';
+                        } else if (data.error.includes('model') || data.error.includes('Model')) {
+                            errorMsg = 'AI 模型暫時無法使用，請稍後再試';
+                        } else {
+                            errorMsg = `分析失敗：${data.error}`;
+                        }
+                    }
+                    alert(errorMsg);
                 }
 
                 // ===== 解鎖按鈕（成功後加入冷卻時間）=====
@@ -1870,7 +1903,18 @@
 
             } catch (err) {
                 console.error(err);
-                alert("辨識失敗！");
+                // 根據錯誤類型提供更具體的訊息
+                let networkErrorMsg = '辨識失敗';
+                if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                    networkErrorMsg = '無法連接伺服器，請檢查網路連線後再試';
+                } else if (err.name === 'AbortError' || err.message.includes('timeout')) {
+                    networkErrorMsg = '連線逾時，請確認網路穩定後再試';
+                } else if (err.message.includes('NetworkError') || err.message.includes('network')) {
+                    networkErrorMsg = '網路異常，請檢查 WiFi 或行動數據是否開啟';
+                } else if (err.message) {
+                    networkErrorMsg = `辨識失敗：${err.message}`;
+                }
+                alert(networkErrorMsg);
                 document.getElementById('loading').classList.remove('active');
 
                 // ===== 解鎖按鈕（失敗時立即解鎖）=====

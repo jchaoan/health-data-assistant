@@ -331,8 +331,30 @@
         .no-records {
             text-align: center;
             color: #888;
-            padding: 25px;
+            padding: 30px 20px;
             font-size: 1em;
+        }
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .empty-state-text {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .empty-state-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .empty-state-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         /* 今日提示卡片 */
@@ -743,7 +765,11 @@
                     <a href="diet_records.html" class="recent-link">查看全部 ›</a>
                 </div>
                 <ul class="recent-list" id="recentList">
-                    <li class="no-records">今天還沒有記錄，快去拍照記錄吧！</li>
+                    <li class="no-records">
+                        <div class="empty-state-icon">📷</div>
+                        <div class="empty-state-text">今天還沒有飲食記錄<br>拍張照片開始追蹤營養吧！</div>
+                        <a href="food-detect.html" class="empty-state-btn">開始記錄 →</a>
+                    </li>
                 </ul>
             </div>
 

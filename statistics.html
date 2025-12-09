@@ -253,22 +253,59 @@
         /* 空狀態 */
         .empty-state {
             text-align: center;
-            padding: 60px;
+            padding: 60px 30px;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: floatEmoji 3s ease-in-out infinite;
+        }
+
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
         .empty-state h2 {
             color: #667eea;
-            font-size: 2em;
-            margin-bottom: 20px;
+            font-size: 1.8em;
+            margin-bottom: 15px;
         }
 
         .empty-state p {
             color: #666;
-            font-size: 1.2em;
-            margin-bottom: 30px;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .empty-state-tips {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .empty-state-tips h4 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-tips ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .empty-state-tips li {
+            margin-bottom: 8px;
         }
 
         /* 響應式設計 - 平板 */
@@ -552,6 +589,18 @@
             color: #888;
         }
 
+        html.dark-mode .empty-state-tips {
+            background: #2a2a2a;
+        }
+
+        html.dark-mode .empty-state-tips h4 {
+            color: #a0a0ff;
+        }
+
+        html.dark-mode .empty-state-tips ul {
+            color: #888;
+        }
+
         html.dark-mode #userName {
             color: #e0e0e0;
         }
@@ -774,11 +823,21 @@
 
         <!-- 空狀態 -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <h2>尚無統計資料</h2>
-            <p>開始記錄您的飲食，即可查看詳細統計分析！</p>
+            <div class="empty-state-icon">📊</div>
+            <h2>開始追蹤您的營養攝取</h2>
+            <p>記錄幾餐飲食後，這裡將顯示精美的統計圖表<br>幫助您了解營養攝取趨勢！</p>
             <button class="btn btn-primary" onclick="window.location.href='food-detect.html'">
-                📸 開始記錄
+                📸 拍照記錄第一餐
             </button>
+            <div class="empty-state-tips">
+                <h4>💡 統計功能包含</h4>
+                <ul>
+                    <li>每日/每週營養攝取趨勢圖</li>
+                    <li>熱量、蛋白質、脂肪、碳水分布</li>
+                    <li>AI 個人化健康週報分析</li>
+                    <li>餐點類型分布統計</li>
+                </ul>
+            </div>
         </div>
 
         <!-- 總體統計 -->

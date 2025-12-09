@@ -46,6 +46,31 @@
             width: 100%;
             max-width: 450px;
             animation: fadeIn 0.5s ease;
+            position: relative;
+        }
+
+        /* 返回按鈕 */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        html.dark-mode .back-btn {
+            color: #a0a0ff;
         }
 
         @keyframes fadeIn {
@@ -443,6 +468,7 @@
 </head>
 <body>
     <div class="register-container">
+        <button class="back-btn" onclick="window.location.href='welcome.html'">← 返回</button>
         <img src="logo.png" alt="健康數據助理 Logo" class="site-logo">
         <div class="logo-container">
             <div class="logo" id="profilePhotoContainer" onclick="selectProfilePhoto()">
@@ -935,9 +961,14 @@
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = '無效的 Email 格式';
                 } else if (error.code === 'auth/weak-password') {
-                    errorMessage = '密碼強度不足，請使用更複雜的密碼';
+                    errorMessage = '密碼強度不足，請至少包含 6 個字元，建議混合英文字母與數字';
+                    errorField = 'passwordError';
                 } else if (error.code === 'auth/network-request-failed') {
                     errorMessage = '網路連線失敗，請檢查您的網路連線';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = '嘗試次數過多，請稍後再試或使用 Google 登入';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage = '此註冊方式目前未開放，請使用 Google 登入';
                 }
 
                 document.getElementById(errorField).textContent = errorMessage;
