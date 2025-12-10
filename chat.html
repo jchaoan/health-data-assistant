@@ -1379,6 +1379,12 @@
                     // 顯示 AI 回應
                     addAIMessage(data.answer);
 
+                    // 如果更新了個人資料，顯示提示
+                    if (data.profile_updated && data.updated_fields && data.updated_fields.length > 0) {
+                        const fieldsText = data.updated_fields.join('、');
+                        addSystemMessage(`✅ 已自動更新您的${fieldsText}`);
+                    }
+
                     // 如果使用了飲食記錄，顯示提示
                     if (data.diet_records_count && data.diet_records_count > 0) {
                         console.log(`✅ AI 已參考您的 ${data.diet_records_count} 筆飲食記錄`);
