@@ -517,6 +517,171 @@
             }
         }
 
+        /* 個人資料更新確認卡片 */
+        .profile-update-confirm {
+            margin: 15px 20px;
+        }
+
+        .update-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+
+        .update-card.success {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-color: #4caf50;
+        }
+
+        .update-card.error {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-color: #f44336;
+        }
+
+        .update-card.dismissed {
+            background: #f5f5f5;
+            border-color: #bdbdbd;
+        }
+
+        .update-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .update-icon {
+            font-size: 1.3em;
+        }
+
+        .update-fields {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .update-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .update-field:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .field-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .update-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .update-actions .btn-confirm {
+            flex: 1;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .update-actions .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .update-actions .btn-cancel {
+            padding: 10px 16px;
+            background: #e0e0e0;
+            color: #666;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .update-actions .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+
+        .update-loading {
+            text-align: center;
+            color: #667eea;
+            padding: 10px;
+        }
+
+        .update-result {
+            text-align: center;
+            font-weight: 500;
+            padding: 5px;
+        }
+
+        /* 深色模式 - 更新確認卡片 */
+        html.dark-mode .update-card {
+            background: linear-gradient(135deg, #2a2a3e 0%, #1e1e2e 100%);
+            border-color: #667eea;
+        }
+
+        html.dark-mode .update-card.success {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            border-color: #4caf50;
+        }
+
+        html.dark-mode .update-card.error {
+            background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+            border-color: #f44336;
+        }
+
+        html.dark-mode .update-card.dismissed {
+            background: #2a2a2a;
+            border-color: #555;
+        }
+
+        html.dark-mode .update-header {
+            color: #e0e0e0;
+        }
+
+        html.dark-mode .update-fields {
+            background: #1e1e2e;
+        }
+
+        html.dark-mode .update-field {
+            border-bottom-color: #3a3a4e;
+        }
+
+        html.dark-mode .field-label {
+            color: #aaa;
+        }
+
+        html.dark-mode .update-actions .btn-cancel {
+            background: #3a3a4e;
+            color: #e0e0e0;
+        }
+
+        html.dark-mode .update-result {
+            color: #e0e0e0;
+        }
+
         /* 歡迎訊息 */
         .welcome-message {
             text-align: center;
@@ -1379,10 +1544,9 @@
                     // 顯示 AI 回應
                     addAIMessage(data.answer);
 
-                    // 如果更新了個人資料，顯示提示
-                    if (data.profile_updated && data.updated_fields && data.updated_fields.length > 0) {
-                        const fieldsText = data.updated_fields.join('、');
-                        addSystemMessage(`✅ 已自動更新您的${fieldsText}`);
+                    // 如果偵測到個人資料變化，顯示確認按鈕
+                    if (data.detected_profile && data.detected_profile.fields && data.detected_profile.fields.length > 0) {
+                        showProfileUpdateConfirm(data.detected_profile);
                     }
 
                     // 如果使用了飲食記錄，顯示提示
@@ -1481,6 +1645,113 @@
             `;
             messagesDiv.appendChild(messageDiv);
             scrollToBottom();
+        }
+
+        // 顯示個人資料更新確認卡片
+        function showProfileUpdateConfirm(detectedProfile) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const confirmDiv = document.createElement('div');
+            confirmDiv.className = 'profile-update-confirm';
+            confirmDiv.id = 'profileUpdateConfirm-' + Date.now();
+
+            // 構建欄位顯示
+            let fieldsHtml = detectedProfile.fields.map(field => {
+                const displayValue = field.display || `${field.value} ${field.unit || ''}`;
+                return `<div class="update-field">
+                    <span class="field-label">${escapeHtml(field.label)}</span>
+                    <span class="field-value">${escapeHtml(displayValue)}</span>
+                </div>`;
+            }).join('');
+
+            confirmDiv.innerHTML = `
+                <div class="update-card">
+                    <div class="update-header">
+                        <span class="update-icon">📝</span>
+                        <span>偵測到資料變化，是否更新？</span>
+                    </div>
+                    <div class="update-fields">
+                        ${fieldsHtml}
+                    </div>
+                    <div class="update-actions">
+                        <button class="btn-confirm" onclick="confirmProfileUpdate('${confirmDiv.id}', ${JSON.stringify(detectedProfile.data).replace(/"/g, '&quot;')})">
+                            ✓ 確認更新
+                        </button>
+                        <button class="btn-cancel" onclick="cancelProfileUpdate('${confirmDiv.id}')">
+                            ✗ 不用了
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            messagesDiv.appendChild(confirmDiv);
+            scrollToBottom();
+        }
+
+        // 確認更新個人資料
+        async function confirmProfileUpdate(cardId, updateData) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+
+            // 顯示載入狀態
+            const actionsDiv = card.querySelector('.update-actions');
+            actionsDiv.innerHTML = '<div class="update-loading">更新中...</div>';
+
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('請先登入');
+                }
+
+                const idToken = await user.getIdToken();
+                const response = await fetch(`${API_BASE_URL}/api/chat/confirm-profile-update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ updates: updateData })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 更新成功，顯示成功訊息
+                    card.innerHTML = `
+                        <div class="update-card success">
+                            <div class="update-result">
+                                ✅ ${escapeHtml(data.message)}
+                            </div>
+                        </div>
+                    `;
+                    // 更新側邊欄的資料顯示
+                    loadUserProfile();
+                } else {
+                    throw new Error(data.error || '更新失敗');
+                }
+            } catch (error) {
+                console.error('更新個人資料失敗:', error);
+                card.innerHTML = `
+                    <div class="update-card error">
+                        <div class="update-result">
+                            ❌ 更新失敗：${escapeHtml(error.message)}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 取消更新
+        function cancelProfileUpdate(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.innerHTML = `
+                    <div class="update-card dismissed">
+                        <div class="update-result">
+                            已略過資料更新
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // 顯示載入動畫
