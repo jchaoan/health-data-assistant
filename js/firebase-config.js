@@ -15,7 +15,7 @@ const firebaseConfig = {
 };
 
 // API 端點
-const API_BASE_URL = 'https://bentoai-api-de2tsulgza-de.a.run.app';
+const API_BASE_URL = 'https://bentoai-api-30594327640.asia-east1.run.app';
 
 // 初始化 Firebase（如果尚未初始化）
 function initFirebase() {
