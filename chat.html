@@ -1724,7 +1724,7 @@
                         </div>
                     `;
                     // 更新側邊欄的資料顯示
-                    loadUserProfile();
+                    loadUserProfileFromFirestore(firebase.auth().currentUser.uid);
                 } else {
                     throw new Error(data.error || '更新失敗');
                 }
