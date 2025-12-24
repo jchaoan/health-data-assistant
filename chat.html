@@ -1703,7 +1703,7 @@
                 }
 
                 const idToken = await user.getIdToken();
-                const response = await fetch(`${API_BASE_URL}/api/chat/confirm-profile-update`, {
+                const response = await fetch(`${window.BentoAIFirebase.apiBaseUrl}/api/chat/confirm-profile-update`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
