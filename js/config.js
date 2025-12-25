@@ -12,7 +12,7 @@ const API_CONFIG = {
     },
     // 生產環境 - Cloud Run URL
     production: {
-        baseUrl: 'https://bentoai-api-30594327640.asia-east1.run.app',
+        baseUrl: 'https://bentoai-api-278768520764.asia-east1.run.app',
         timeout: 60000
     }
 };

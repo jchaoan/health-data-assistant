@@ -1859,7 +1859,7 @@
 
                 // 添加時間戳避免瀏覽器快取，確保每次 F5 刷新都能獲取最新數據
                 const timestamp = new Date().getTime();
-                const response = await fetch(`https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records?limit=20&t=${timestamp}`, {
+                const response = await fetch(`https://bentoai-api-278768520764.asia-east1.run.app/api/diet-records?limit=20&t=${timestamp}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
@@ -2427,7 +2427,7 @@
             try {
                 const idToken = await currentUser.getIdToken();
 
-                const response = await fetch('https://bentoai-api-30594327640.asia-east1.run.app/api/diet-records', {
+                const response = await fetch('https://bentoai-api-278768520764.asia-east1.run.app/api/diet-records', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
